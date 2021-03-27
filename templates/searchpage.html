@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="semantic-search" style="font-family: sans-serif; padding: 250px;">
+
+        <div class="logo text-center">
+            <img src="./static/imgs/logo.png" width="242.5" height="157">
+        </div>
+
+
+        <div class="semantic-query text-center" style="margin: 13px auto 10px; border-radius: 20px; max-width: 550px;background-color: #F5F5F5">
+            <form method="POST" action="/process">
+                <div class="input-group">
+                    <input type="text" name="query" class="form-control" id="query">
+                    <button type="submit" class="btn btn-light">
+                        <i class="bi bi-search" title="Semantic Search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+{% endblock %}

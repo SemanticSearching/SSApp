@@ -1,0 +1,20 @@
+.semantic-search
+{
+    font-family: sans-serif;
+    padding: 300px;
+}
+
+.logo
+{
+    margin: 100px auto 10px;
+    width: 250px;
+    cursor: pointer;
+}
+
+.semantic-query
+{
+    margin: 13px auto 10px;
+    border-radius: 20px;
+    max-width: 550px;
+    background-color: #F5F5F5;
+}
