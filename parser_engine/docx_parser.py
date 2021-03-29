@@ -44,27 +44,29 @@ def docx_parser(filepath: str, sliding_window: int =3, max_words: int=100):
     segs = []
 
     for paragraph in document.paragraphs:
+
         sentences = segmenter.segment(paragraph.text)
 
-        # header & one sentence paragraph
-        if len(sentences) == 1:
-            segs.append(sentences)
-        else:
-            # long paragraph
-            end_idx = len(sentences) - 1
-            for i in range(len(sentences)):
-                if i + sliding_window <= end_idx:
-                    seg = segment_clipper(sentences[i: i+sliding_window], max_words)
-                    segs.append(seg)
+        if sentences:
+            # header & one sentence paragraph
+            if len(sentences) <= sliding_window:
+                segs.append(sentences)
+            else:
+                # long paragraph
+                end_idx = len(sentences) - 1
+                for i in range(len(sentences)):
+                    if i + sliding_window <= end_idx:
+                        seg = segment_clipper(sentences[i: i+sliding_window], max_words)
+                        segs.append(seg)
 
-                    if (i + sliding_window == end_idx) and (len(seg) == sliding_window):
-                        break
-                else:
-                    seg = segment_clipper(sentences[i:], max_words)
-                    segs.append(seg)
+                        if (i + sliding_window == end_idx) and (len(seg) == sliding_window):
+                            break
+                    else:
+                        seg = segment_clipper(sentences[i:], max_words)
+                        segs.append(seg)
 
     return segs
 
 if __name__ == '__main__':
     # Debug
-    segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/Banco Pop Exhibit - Required Insurance BP v. 12.14.18.docx')
+    segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/InformationSecurityRequirements.docx')
