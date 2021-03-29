@@ -7,10 +7,15 @@
             <img src="./static/imgs/logo.png" width="242.5" height="157">
         </div>
 
-        <div class="semantic-query text-center" style="margin: 13px auto 10px; border-radius: 20px; max-width: 550px;background-color: #F5F5F5">
+        <div class="semantic-query text-center"
+             style="margin: 13px auto 10px; border-radius: 20px; max-width: 550px;background-color: #F5F5F5">
             <form method="POST" action="/process">
                 <div class="input-group">
-                    <input type="text" name="query" class="form-control" id="query" placeholder={{ in_q }}>
+                    {% if query_form != '' %}
+                        <input type="text" name="query" class="form-control" id="query" value="{{ request.form['query'] }}">
+                    {% else %}
+                        <input type="text" name="query" class="form-control" id="query" value="{{ request.args.get('query') }}">
+                    {% endif %}
                     <button type="submit" class="btn btn-light">
                         <i class="bi bi-search" title="Semantic Search"></i>
                     </button>
@@ -21,28 +26,53 @@
     </div>
 
     <div class="container">
-        <div class="alert alert-success" role="alert">
-        <ul>{% for title, link in results %}
-            <li>
-                <a href={{link}}>{{title}}</a>
-            </li>
-            {%endfor %}
-        </ul>
-        </div>
+        {% for paper in papers.items %}
+            <div class="container">
+                <h3><a href={{ paper.link }}>{{ paper.title }}</a></h3>
+            </div>
+            <div class="container">
+                <a>{{ paper.id }}</a>
+                <a>{{ paper.seg }}</a>
+            </div>
+            <br>
+        {% endfor %}
     </div>
 
-    <nav aria-label="Page navigation example">
-        <ul class="pagination justify-content-center">
-            <li class="page-item disabled">
-                <a class="page-link" href="#" tabindex="-1">Previous</a>
-            </li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item">
-                <a class="page-link" href="#">Next</a>
-            </li>
-        </ul>
-    </nav>
+
+    <!-- Pagination Links-->
+    <div class="text-center">
+        <a href="{{ url_for('process', page=papers.prev_num, query=query_form+query_arg) }}"
+           class="btn btn-outline-dark
+       {% if papers.page == 1 %}disabled{% endif %}">
+            &laquo;
+        </a>
+        <!-- Loop through the number of pages to display a link for each-->
+        {% for page_num in papers.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                <!-- Check for the active page and set the link to "Active"-->
+                {% if papers.page == page_num %}
+                    <a href="{{ url_for('process', page=page_num, query=query_form+query_arg) }}"
+                       class="btn btn-dark">
+                        {{ page_num }}
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('process', page=page_num, query=query_form+query_arg) }}"
+                       class="btn btn-outline-dark">
+                        {{ page_num }}
+                    </a>
+                {% endif %}
+            {% else %}
+                ...
+            {% endif %}
+        {% endfor %}
+        <a href="{{ url_for('process', page=papers.next_num, query=query_form+query_arg) }}"
+           class="btn btn-outline-dark
+       {% if papers.page == papers.pages %}disabled{% endif %}">
+            &raquo;
+        </a>
+    </div>
+    <p class="text-center mt-3">
+        Showing page {{ papers.page }} of {{ papers.pages }}
+    </p>
 
 {% endblock %}

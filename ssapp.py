@@ -10,8 +10,10 @@ from os.path import join
 from sentence_transformers import SentenceTransformer
 from vector_engine.utils import vector_search
 from config import Config
-from flask_sqlalchemy import SQLAlchemy
-from parser_engine.monitor import Watcher
+from flask_sqlalchemy import SQLAlchemy, BaseQuery
+from sqlalchemy.sql.expression import case
+# from parser_engine.tables import Paper
+# from parser_engine.monitor import Watcher
 from threading import Thread
 
 app = Flask(__name__, static_folder='static')
@@ -20,9 +22,19 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 seg = pysbd.Segmenter(language="en", clean=False)
+ROWS_PER_PAGE = 10
+# monitor = Watcher()
 
 
-monitor = Watcher()
+class Paper(db.Model):
+    title = db.Column(db.String(100), index=True)
+    seg = db.Column(db.String(1000), index=True)
+    link = db.Column(db.String(500), index=True)
+    id = db.Column(db.Integer, index=True, unique=True, primary_key=True)
+
+    def __repr__(self):
+        return'<Paper {}>'.format(self.title)
+
 
 def read_data(data="./models/papers.pickle"):
     """Read the data from pickle."""
@@ -49,44 +61,6 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def gen_link(title, sent):
-    """
-    given a sent, gen loc flag
-    Args:
-        title:
-        sent:
-
-    Returns:
-
-    """
-    # sents = seg.segment(sent)
-    sents = sent.strip().split(" ")
-    sent0 = sents[:2]
-    sent2 = sents[-2:]
-    # sent0 = sents[0].split(" ")
-    # sent2 = sents[2].split(" ")
-    prefix = "http://127.0.0.1:5000/static/htmls/{}.html#:~:text=".format(title)
-    # prefix = "https://semanticsearch.site/static/htmls/{}.html#:~:text=".format(title)
-    first, last = "", ""
-    if len(sent0) > 2:
-        sent0_len = 2
-    else:
-        sent0_len = len(sent0)
-    if len(sent2) > 2:
-        sent2_len = 2
-    else:
-        sent2_len = len(sent2)
-    for i in range(sent0_len - 1):
-        first += sent0[i]
-        first += "%20"
-    first += sent0[sent0_len - 1]
-    for i in range(sent2_len - 1):
-        last += sent2[i]
-        last += "%20"
-    last += sent2[sent2_len - 1]
-    return prefix+first+","+last
-
-
 model = load_bert_model()
 if os.path.exists("./models/papers.pickle"):
     data = read_data()
@@ -100,25 +74,24 @@ def index():
     return render_template("searchpage.html")
 
 
-@app.route('/process', methods=["POST"])
+@app.route('/process', methods=["POST", "GET"])
 def process():
     if request.method == 'POST':
-        query = request.form['query'].strip()
-        results = []
-        if query:
-            # Get paper IDs
-            D, I = vector_search([query], model, faiss_index, 100)
-            # Slice data on year
-            # Get individual results
-            for id_ in I.flatten().tolist():
-                if id_ in data["id"].tolist():
-                    f = data[(data.id == id_)]
-                else:
-                    continue
-                title = f.iloc[0].title
-                link = gen_link(f.iloc[0].title, f.iloc[0].sent)
-                results.append((title, link))
-    return render_template("results.html", results=results, in_q="{}".format(query))
+        query_form = request.form['query'].strip()
+        query_arg = ''
+    else:
+        query_arg = request.args.get('query').strip()
+        query_form = ''
+    query = query_form if query_form != '' else query_arg
+    if query:
+        # Get paper IDs
+        D, I = vector_search([query], model, faiss_index, 100)
+        ids = I.flatten().tolist()
+        print(ids)
+        ids_order = case({id: index for index, id in enumerate(ids)}, value=Paper.id)
+        page = request.args.get('page', default=1, type=int)
+        papers = Paper.query.filter(Paper.id.in_(ids)).order_by(ids_order).paginate(page=page, per_page=ROWS_PER_PAGE)
+    return render_template("results.html", papers=papers, query_form=query_form, query_arg=query_arg)
 
 
 @app.route('/document', methods=['GET', 'POST'])
