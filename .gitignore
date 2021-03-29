@@ -3,3 +3,5 @@ __pycache__/
 app.py
 SSL/
 /models
+/static/docxs
+/static/htmls
