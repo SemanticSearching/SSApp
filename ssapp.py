@@ -108,13 +108,15 @@ def process():
         if query:
             # Get paper IDs
             D, I = vector_search([query], model, faiss_index, 100)
+            print(I.flatten().tolist())
             # Slice data on year
             # Get individual results
             for id_ in I.flatten().tolist():
-                if id_ in data["id"].tolist():
-                    f = data[(data.id == id_)]
-                else:
-                    continue
+                # if id_ in data["id"].tolist():
+                #     f = data[(data.id == id_)]
+                # else:
+                #     continue
+                f = data[(data.id == id_)]
                 title = f.iloc[0].title
                 link = gen_link(f.iloc[0].title, f.iloc[0].sent)
                 results.append((title, link))
