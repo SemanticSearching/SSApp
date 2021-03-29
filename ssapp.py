@@ -62,10 +62,10 @@ def allowed_file(filename):
 
 
 model = load_bert_model()
-if os.path.exists("./models/papers.pickle"):
+if os.path.exists("/home/ubuntu/proj/SSApp/models/papers.pickle"):
     data = read_data()
     data = data.astype({"title": "string", "sent": "string", "id": "int"})
-if os.path.exists("./models/faiss_index.pickle"):
+if os.path.exists("/home/ubuntu/proj/SSApp/models/faiss_index.pickle"):
     faiss_index = load_faiss_index()
 
 

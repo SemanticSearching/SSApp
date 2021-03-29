@@ -131,6 +131,7 @@ dependencies:
     - faiss-cpu==1.7.0
     - flask==1.1.2
     - flask-sqlalchemy==2.5.1
+    - flask-wtf==0.14.3
     - fsspec==0.8.5
     - future==0.18.2
     - greenlet==1.0.0
@@ -151,3 +152,4 @@ dependencies:
     - watchdog==2.0.2
     - werkzeug==1.0.1
     - wrapt==1.12.1
+    - wtforms==2.3.3

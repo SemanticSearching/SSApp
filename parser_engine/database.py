@@ -8,9 +8,10 @@ import pickle
 import mammoth
 from parser_engine.docx_parser import docx_parser
 from ssapp import db, Paper
+from urllib.parse import quote_plus
 
 
-def gen_link(title, sent):
+def gen_link(title, sent, num=30, min_words=3):
     """
     given a sent, gen loc flag
     Args:
@@ -21,37 +22,30 @@ def gen_link(title, sent):
 
     """
     # sents = seg.segment(sent)
+    # prefix = "http://127.0.0.1:5000/static/htmls/{}.html#:~:text=".format(title)
+    prefix = "https://semanticsearch.site/static/htmls/{}.html#:~:text=".format(title)
     sents = sent.strip().split(" ")
-    sent0 = sents[:2]
-    sent2 = sents[-2:]
-    # sent0 = sents[0].split(" ")
-    # sent2 = sents[2].split(" ")
-    prefix = "http://127.0.0.1:5000/static/htmls/{}.html#:~:text=".format(title)
-    # prefix = "https://semanticsearch.site/static/htmls/{}.html#:~:text=".format(title)
-    first, last = "", ""
-    if len(sent0) > 2:
-        sent0_len = 2
+    if "" in sents:
+        sents.remove("")
+    if " " in sents:
+        sents.remove(" ")
+    if len(sents) <min_words:
+        return prefix
+    elif len(sents) < 2*num:
+        # only first part
+        first = quote_plus(sent.strip()).replace("+", "%20")
+        return prefix + first
     else:
-        sent0_len = len(sent0)
-    if len(sent2) > 2:
-        sent2_len = 2
-    else:
-        sent2_len = len(sent2)
-    for i in range(sent0_len - 1):
-        first += sent0[i]
-        first += "%20"
-    first += sent0[sent0_len - 1]
-    for i in range(sent2_len - 1):
-        last += sent2[i]
-        last += "%20"
-    last += sent2[sent2_len - 1]
-    return prefix+first+","+last
+        # both first and last part
+        first = quote_plus(" ".join(sents[:num])).replace("+", "%20")
+        last = quote_plus(" ".join(sents[-num:])).replace("+", "%20")
+        return prefix + first + "," + last
 
 
-def update_papers(title, sents):
-    for s in sents:
+def update_papers(title, sents, ids):
+    for s, id in zip(sents, ids):
         link = gen_link(title, s)
-        p = Paper(title=title, seg=s, link=link)
+        p = Paper(title=title, seg=s, link=link, id=id)
         db.session.add(p)
     db.session.commit()
 
@@ -63,9 +57,7 @@ def update_papers_index(embeddings, all_ids, path_to_faiss):
         embeddings:
         all_ids:
         path_to_faiss:
-
     Returns:
-
     """
     if os.path.exists(path_to_faiss):
         with open(path_to_faiss, "rb") as h:
@@ -120,7 +112,7 @@ def write_to_db(filepath: str, path_to_papers: str, path_to_faiss: str, model, w
     embeddings = model.encode(all_sents, show_progress_bar=True)
     # change datatype
     embeddings = np.array([embedding for embedding in embeddings]).astype("float32")
-    update_papers(title, all_sents)
+    update_papers(title, all_sents, all_ids)
     print("papers are stored in database")
     update_papers_index(embeddings, all_ids, path_to_faiss)
 
