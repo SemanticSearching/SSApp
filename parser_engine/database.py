@@ -22,16 +22,14 @@ def gen_link(title, sent, num=30, min_words=3):
 
     """
     # sents = seg.segment(sent)
-    # prefix = "http://127.0.0.1:5000/static/htmls/{}.html#:~:text=".format(title)
-    prefix = "https://semanticsearch.site/static/htmls/{}.html#:~:text=".format(title)
+    prefix = "http://127.0.0.1:5000/static/htmls/{}.html#:~:text=".format(title)
+    # prefix = "https://semanticsearch.site/static/htmls/{}.html#:~:text=".format(title)
     sents = sent.strip().split(" ")
     if "" in sents:
         sents.remove("")
     if " " in sents:
         sents.remove(" ")
-    if len(sents) <min_words:
-        return prefix
-    elif len(sents) < 2*num:
+    if len(sents) < 2*num:
         # only first part
         first = quote_plus(sent.strip()).replace("+", "%20")
         return prefix + first
