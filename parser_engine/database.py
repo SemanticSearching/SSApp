@@ -7,11 +7,59 @@ import numpy as np
 import pickle
 import mammoth
 from parser_engine.docx_parser import docx_parser
-from ssapp import db, Paper
 from urllib.parse import quote_plus
+from os.path import join
+from flask import Flask, render_template, url_for, request, redirect, flash,\
+    send_from_directory, current_app, send_from_directory
+from config import Config
+from flask_sqlalchemy import SQLAlchemy, BaseQuery
 
 
-def gen_link(title, sent, num=30, min_words=3):
+DIR_PATH = os.path.dirname(os.path.realpath(__file__)).replace("/parser_engine", "")
+DOCXS = join(DIR_PATH, "static/docxs")
+HTMLS = join(DIR_PATH, "static/htmls")
+app = Flask(__name__, static_folder=join(DIR_PATH, 'static'), template_folder=join(DIR_PATH, "templates"))
+ALLOWED_EXTENSIONS = {'docx', 'pdf', 'doc'}
+app.config.from_object(Config)
+db = SQLAlchemy(app)
+
+
+class Paper(db.Model):
+    title = db.Column(db.String(100), index=True)
+    seg = db.Column(db.String(1000), index=True)
+    link = db.Column(db.String(500), index=True)
+    id = db.Column(db.Integer, index=True, unique=True, primary_key=True)
+
+    def __repr__(self):
+        return'<Paper {}>'.format(self.title)
+
+
+def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words):
+    """
+
+    Args:
+        path_to_papers:
+        path_to_faiss:
+        model:
+        win_size:
+        max_words:
+
+    Returns:
+
+    """
+    # remove all the html in
+    html_files = os.listdir(HTMLS)
+    for html_file in html_files:
+        os.remove(join(HTMLS, html_file))
+    # gen the faiss indexs
+    doc_files = os.listdir(DOCXS)
+    for doc in doc_files:
+        filepath = join(DIR_PATH, "static/docxs/{}".format(doc))
+        write_to_db(filepath, path_to_papers, path_to_faiss, model, win_size, max_words)
+        write_to_html(filepath)
+
+
+def gen_link(title, sent, num=30):
     """
     given a sent, gen loc flag
     Args:
@@ -21,9 +69,7 @@ def gen_link(title, sent, num=30, min_words=3):
     Returns:
 
     """
-    # sents = seg.segment(sent)
-    prefix = "http://127.0.0.1:5000/static/htmls/{}.html#:~:text=".format(title)
-    # prefix = "https://semanticsearch.site/static/htmls/{}.html#:~:text=".format(title)
+    prefix = "http://{}/static/htmls/" + "{}.html#:~:text=".format(title)
     sents = sent.strip().split(" ")
     if "" in sents:
         sents.remove("")
@@ -75,7 +121,7 @@ def write_to_html(filepath: str):
     with open(filepath, "rb") as docx_file:
         result = mammoth.convert_to_html(docx_file)
         html = result.value  # The generated HTML
-        html_path = os.path.join("../static/htmls", newfile.replace(".docx", ".html"))
+        html_path = os.path.join(HTMLS, newfile.replace(".docx", ".html"))
         with open(html_path, "a+") as f:
             f.write(html)
             print("new file %s is done" % newfile)

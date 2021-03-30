@@ -12,35 +12,16 @@ from vector_engine.utils import vector_search
 from config import Config
 from flask_sqlalchemy import SQLAlchemy, BaseQuery
 from sqlalchemy.sql.expression import case
-# from parser_engine.tables import Paper
-# from parser_engine.monitor import Watcher
-from threading import Thread
+from parser_engine.database import gen_faiss, app, db, Paper
 
-app = Flask(__name__, static_folder='static')
 ALLOWED_EXTENSIONS = {'docx', 'pdf', 'doc'}
-app.config.from_object(Config)
-db = SQLAlchemy(app)
-dir_path = os.path.dirname(os.path.realpath(__file__))
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 seg = pysbd.Segmenter(language="en", clean=False)
 ROWS_PER_PAGE = 10
-# monitor = Watcher()
-
-
-class Paper(db.Model):
-    title = db.Column(db.String(100), index=True)
-    seg = db.Column(db.String(1000), index=True)
-    link = db.Column(db.String(500), index=True)
-    id = db.Column(db.Integer, index=True, unique=True, primary_key=True)
-
-    def __repr__(self):
-        return'<Paper {}>'.format(self.title)
-
-
-def read_data(data="./models/papers.pickle"):
-    """Read the data from pickle."""
-    with open(data, "rb") as p:
-        papers = pickle.load(p)
-    return pd.DataFrame(data=papers, columns=["title", "sent", "id"])
+SERVER = "LOCAL"
+HOST = "127.0.0.1:5000" if SERVER == "LOCAL" else "semanticsearch.site"
+PATH_TO_FAISS = join(DIR_PATH, "models/faiss_index.pickle")
+PATH_TO_PAPERS = join(DIR_PATH, "models/papers.db")
 
 
 def load_bert_model(name="distilbert-base-nli-stsb-mean-tokens"):
@@ -48,8 +29,7 @@ def load_bert_model(name="distilbert-base-nli-stsb-mean-tokens"):
     return SentenceTransformer(name)
 
 
-def load_faiss_index(path_to_faiss = join(dir_path,
-                                          "models/faiss_index.pickle")):
+def load_faiss_index(path_to_faiss):
     """Load and deserialize the Faiss index."""
     with open(path_to_faiss, "rb") as h:
         data = pickle.load(h)
@@ -61,12 +41,10 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-model = load_bert_model()
-if os.path.exists("/home/ubuntu/proj/SSApp/models/papers.pickle"):
-    data = read_data()
-    data = data.astype({"title": "string", "sent": "string", "id": "int"})
-if os.path.exists("/home/ubuntu/proj/SSApp/models/faiss_index.pickle"):
-    faiss_index = load_faiss_index()
+MODEL = load_bert_model()
+if not os.path.exists(PATH_TO_FAISS):
+    gen_faiss(PATH_TO_PAPERS, PATH_TO_FAISS, MODEL, win_size=3, max_words=100)
+faiss_index = load_faiss_index(PATH_TO_FAISS)
 
 
 @app.route('/')
@@ -85,13 +63,13 @@ def process():
     query = query_form if query_form != '' else query_arg
     if query:
         # Get paper IDs
-        D, I = vector_search([query], model, faiss_index, 100)
+        D, I = vector_search([query], MODEL, faiss_index, 100)
         ids = I.flatten().tolist()
         print(ids)
         ids_order = case({id: index for index, id in enumerate(ids)}, value=Paper.id)
         page = request.args.get('page', default=1, type=int)
         papers = Paper.query.filter(Paper.id.in_(ids)).order_by(ids_order).paginate(page=page, per_page=ROWS_PER_PAGE)
-    return render_template("results.html", papers=papers, query_form=query_form, query_arg=query_arg)
+    return render_template("results.html", papers=papers, query_form=query_form, query_arg=query_arg, host=HOST)
 
 
 @app.route('/document', methods=['GET', 'POST'])
