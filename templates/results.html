@@ -12,9 +12,9 @@
             <form method="POST" action="/process">
                 <div class="input-group">
                     {% if query_form != '' %}
-                        <input type="text" name="query" class="form-control" id="query" value="{{ request.form['query'] }}">
+                        <input type="text" name="query" class="form-control" id="query" placeholder="{{ request.form['query'] }}">
                     {% else %}
-                        <input type="text" name="query" class="form-control" id="query" value="{{ request.args.get('query') }}">
+                        <input type="text" name="query" class="form-control" id="query" placeholder="{{ request.args.get('query') }}">
                     {% endif %}
                     <button type="submit" class="btn btn-light">
                         <i class="bi bi-search" title="Semantic Search"></i>
