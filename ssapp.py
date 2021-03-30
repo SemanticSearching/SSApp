@@ -65,7 +65,7 @@ def process():
         # Get paper IDs
         D, I = vector_search([query], MODEL, faiss_index, 100)
         ids = I.flatten().tolist()
-        print(ids)
+        # print(ids)
         ids_order = case({id: index for index, id in enumerate(ids)}, value=Paper.id)
         page = request.args.get('page', default=1, type=int)
         papers = Paper.query.filter(Paper.id.in_(ids)).order_by(ids_order).paginate(page=page, per_page=ROWS_PER_PAGE)
