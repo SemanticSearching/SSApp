@@ -16,6 +16,8 @@ sent_bert = load_bert_model()
 from app.parser_engine.database import gen_faiss
 
 if not os.path.exists(cf.PATH_TO_FAISS):
+    if not os.path.exists(cf.PATH_TO_DB_FOLDER):
+        os.mkdir(cf.PATH_TO_DB_FOLDER)
     gen_faiss(cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS)
 faiss_index = load_faiss_index(cf.PATH_TO_FAISS)
 
