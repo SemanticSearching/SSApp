@@ -29,6 +29,9 @@ def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words):
     html_files = os.listdir(cf.PATH_TO_HTMLS)
     for html_file in html_files:
         os.remove(join(cf.PATH_TO_HTMLS, html_file))
+    if os.path.exists(cf.PATH_TO_HTMLS):
+        os.system("sudo rm -r {}".format(cf.PATH_TO_HTMLS))
+        os.system("sudo mkdir {}".format(cf.PATH_TO_HTMLS))
     # gen the faiss indexs
     doc_files = os.listdir(cf.PATH_TO_DOCXS)
     for doc in doc_files:
