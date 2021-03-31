@@ -1,5 +1,4 @@
 .idea/
 __pycache__/
-app.py
-SSL/
-/models
+/app/__pycache__/
+/app/db_storage
