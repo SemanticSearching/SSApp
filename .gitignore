@@ -1,4 +1,5 @@
 .idea/
 __pycache__/
 /app/__pycache__/
-/app/db_storage
+/app/db_storage/faiss_index.pickle
+/app/db_storage/papers.db
