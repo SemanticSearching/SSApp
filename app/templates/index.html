@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+
+        <form method="POST" action="/process">
+            <div class="form-group">
+                <label>Your Query</label>
+                <textarea type="text" rows="1" cols="5" class="form-control"
+                          name="rawtext" required="true">{{query}}
+                </textarea>
+                <br/>
+                <select class="form-control" name="taskoption">
+                  <option selected>Select Task</option>
+                  <option value="Top 1">Top 1</option>
+                  <option value="Top 5">Top 5</option>
+                  <option value="Top 10">Top 10</option>
+                  <option value="Top 20">Top 20</option>
+                </select>
+                <br/>
+                <button type="reset" class="btn btn-primary"><i class="fa fa-eraser"></i> Clear</button>
+                <button type="submit" class="btn btn-info"><i class="fa fa-database"></i> Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="container">
+        <div class="alert alert-success" role="alert">
+        <ul>{% for i in results %}
+            <li>
+                <a href="{{ url_for('document') }}">{{i}}</a>
+            </li>
+            {%endfor %}
+        </ul>
+        </div>
+    </div>
+{% endblock %}
