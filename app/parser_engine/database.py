@@ -49,7 +49,7 @@ def gen_link(title, sent, num=30):
     Returns:
 
     """
-    prefix = "https://{}/SSApp/app/static/htmls/" + "{}.html#:~:text=".format(title)
+    prefix = "www.{}/SSApp/app/static/htmls/" + "{}.html#:~:text=".format(title)
     sents = sent.strip().split(" ")
     if "" in sents:
         sents.remove("")
