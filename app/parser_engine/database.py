@@ -29,6 +29,8 @@ def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words):
     if os.path.exists(cf.PATH_TO_HTMLS):
         os.rmdir(cf.PATH_TO_HTMLS)
         os.mkdir(cf.PATH_TO_HTMLS)
+    else:
+        os.mkdir(cf.PATH_TO_HTMLS)
     # gen the faiss indexs
     doc_files = os.listdir(cf.PATH_TO_DOCXS)
     for doc in doc_files:
