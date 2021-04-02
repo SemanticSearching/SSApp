@@ -1,6 +1,23 @@
 from docx import Document
 import pysbd
+import re
 
+def sents_preprocessor(sents: list):
+    new_sents = []
+    for sent in sents:
+        if sent == 'AND':
+            continue
+        elif sent == 'and':
+            continue
+        elif sent == 'AND\t':
+            continue
+        elif sent == 'BETWEEN':
+            continue
+
+
+        new_sents.append(sent)
+
+    return new_sents
 
 def segment_clipper(segment: list, max_words: int=100):
     """
@@ -46,6 +63,7 @@ def docx_parser(filepath: str, sliding_window: int =3, max_words: int=100):
     for paragraph in document.paragraphs:
 
         sentences = segmenter.segment(paragraph.text)
+        sentences = sents_preprocessor(sentences)
 
         if sentences:
             # header & one sentence paragraph
@@ -70,3 +88,6 @@ def docx_parser(filepath: str, sliding_window: int =3, max_words: int=100):
 if __name__ == '__main__':
     # Debug
     segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/InformationSecurityRequirements.docx')
+    segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/BancoPopExhibit.docx')
+    segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/JLL_SAICContract.docx')
+    segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/NGXeroxeMPS.docx')
