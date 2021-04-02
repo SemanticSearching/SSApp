@@ -10,9 +10,10 @@ from os.path import join
 from app import db, sent_bert
 from app.models import Paper
 from app.config import Config as cf
+import urllib
 
 
-def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words):
+def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words, server):
     """
 
     Args:
@@ -35,11 +36,11 @@ def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words):
     doc_files = os.listdir(cf.PATH_TO_DOCXS)
     for doc in doc_files:
         filepath = join(cf.PATH_TO_DOCXS, doc)
-        write_to_db(filepath, path_to_papers, path_to_faiss, model, win_size, max_words)
+        write_to_db(filepath, path_to_papers, path_to_faiss, model, win_size, max_words, server)
         write_to_html(filepath)
 
 
-def gen_link(title, sent, num=30):
+def gen_link(title, sent, server):
     """
     given a sent, gen loc flag
     Args:
@@ -49,26 +50,30 @@ def gen_link(title, sent, num=30):
     Returns:
 
     """
-    prefix = "https://{}/static/htmls/" + "{}.html#:~:text=".format(title)
-    sents = sent.strip().split(" ")
-    if "" in sents:
-        sents.remove("")
-    if " " in sents:
-        sents.remove(" ")
-    if len(sents) < 2*num:
-        # only first part
-        first = quote_plus(sent.strip()).replace("+", "%20")
-        return prefix + first
+    if server == "LOCAL":
+        prefix = "http://{}/static/htmls/" + "{}.html#:~:text=".format(title)
     else:
-        # both first and last part
-        first = quote_plus(" ".join(sents[:num])).replace("+", "%20")
-        last = quote_plus(" ".join(sents[-num:])).replace("+", "%20")
-        return prefix + first + "," + last
+        prefix = "https://{}/static/htmls/" + "{}.html#:~:text=".format(title)
+    sent = sent.strip()
+    # if "" in sents:
+    #     sents.remove("")
+    # if " " in sents:
+    #     sents.remove(" ")
+    # if len(sents) < 2*num:
+    #     # only first part
+    #     first = quote_plus(sent.strip()).replace("+", "%20")
+    #     return prefix + first
+    # else:
+    #     # both first and last part
+    #     first = quote_plus(" ".join(sents[:num])).replace("+", "%20")
+    #     last = quote_plus(" ".join(sents[-num:])).replace("+", "%20")
+    #     return prefix + first + "," + last
+    return prefix + urllib.parse.quote(sent, safe='~()*!.\'')
 
 
-def update_papers(title, sents, ids):
+def update_papers(title, sents, ids, server):
     for s, id in zip(sents, ids):
-        link = gen_link(title, s)
+        link = gen_link(title, s, server)
         p = Paper(title=title, seg=s, link=link, id=id)
         db.session.add(p)
     db.session.commit()
@@ -107,7 +112,7 @@ def write_to_html(filepath: str):
             print("new file %s is done" % newfile)
 
 
-def write_to_db(filepath: str, path_to_papers: str, path_to_faiss: str, model, win_size, max_words):
+def write_to_db(filepath: str, path_to_papers: str, path_to_faiss: str, model, win_size:int, max_words:int, server:str):
     """
     give one paper, update the papers.pickle and papers_index.pickle
     papers.pickle: np.array([title, sents, embedding, id])
@@ -136,7 +141,7 @@ def write_to_db(filepath: str, path_to_papers: str, path_to_faiss: str, model, w
     embeddings = model.encode(all_sents, show_progress_bar=True)
     # change datatype
     embeddings = np.array([embedding for embedding in embeddings]).astype("float32")
-    update_papers(title, all_sents, all_ids)
+    update_papers(title, all_sents, all_ids, server)
     print("papers are stored in database")
     update_papers_index(embeddings, all_ids, path_to_faiss)
 

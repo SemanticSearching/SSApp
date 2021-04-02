@@ -18,7 +18,7 @@ from app.parser_engine.database import gen_faiss
 if not os.path.exists(cf.PATH_TO_FAISS):
     if not os.path.exists(cf.PATH_TO_DB_FOLDER):
         os.mkdir(cf.PATH_TO_DB_FOLDER)
-    gen_faiss(cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS)
+    gen_faiss(cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS, cf.SERVER)
 faiss_index = load_faiss_index(cf.PATH_TO_FAISS)
 
 from app import routes, models

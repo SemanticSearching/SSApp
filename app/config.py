@@ -12,7 +12,7 @@ class Config(object):
     # function variables
     ROWS_PER_PAGE = 10
     SERVER = "LOCAL"
-    HOST = "localhost" if SERVER == "LOCAL" else "semanticsearch.site"
+    HOST = "127.0.0.1" if SERVER == "LOCAL" else "semanticsearch.site"
     PATH_TO_FAISS = join(basedir, "db_storage/faiss_index.pickle")
     PATH_TO_DB = join(basedir, "db_storage/papers.db")
     PATH_TO_DB_FOLDER = join(basedir, "db_storage")
