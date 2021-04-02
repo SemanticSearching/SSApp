@@ -11,13 +11,12 @@ import mammoth
 import pysbd
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from parser_engine.database import write_to_db, write_to_html
+from database import write_to_db, write_to_html
 from sentence_transformers import SentenceTransformer
 
 
-seg = pysbd.Segmenter(language="en", clean=False)
-PATH_TO_PAPERS = "../models/papers.pickle"
 PATH_TO_FAISS = "../models/faiss_index.pickle"
+PATH_TO_PAPERS = "../models/papers.db"
 DIRECTORY_TO_WATCH = "../static/docxs"
 ST_MODEL = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
 WIN_SIZE = 3
@@ -55,8 +54,8 @@ class Handler(FileSystemEventHandler):
             print("Received created event - %s." % event.src_path)
             newfile = os.path.basename(event.src_path)
             if newfile.endswith(".docx"):
-                write_to_html(event.src_path)
                 write_to_db(event.src_path, PATH_TO_PAPERS, PATH_TO_FAISS, ST_MODEL, WIN_SIZE, MAX_WORDS)
+                write_to_html(event.src_path)
 
 
 if __name__ == '__main__':
