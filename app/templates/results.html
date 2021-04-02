@@ -4,7 +4,7 @@
     <div class="semantic-search" style="font-family: sans-serif; padding: 50px;">
 
         <div class="logo text-center">
-            <img src="./static/imgs/logo.png" width="242.5" height="157">
+            <img src="./static/imgs/logo1.png" width="212" height="178">
         </div>
 
         <div class="semantic-query text-center"
@@ -12,9 +12,9 @@
             <form method="POST" action="/process">
                 <div class="input-group">
                     {% if query_form != '' %}
-                        <input type="text" name="query" class="form-control" id="query" value="{{ request.form['query'] }}">
+                        <input type="text" name="query" class="form-control" id="query" placeholder="{{ request.form['query'] }}">
                     {% else %}
-                        <input type="text" name="query" class="form-control" id="query" value="{{ request.args.get('query') }}">
+                        <input type="text" name="query" class="form-control" id="query" placeholder="{{ request.args.get('query') }}">
                     {% endif %}
                     <button type="submit" class="btn btn-light">
                         <i class="bi bi-search" title="Semantic Search"></i>
@@ -28,7 +28,7 @@
     <div class="container">
         {% for paper in papers.items %}
             <div class="container">
-                <h3><a href={{ paper.link }}>{{ paper.title }}</a></h3>
+                <h3><a href={{ paper.link.format(host) }}>{{ paper.title }}</a></h3>
             </div>
             <div class="container">
                 <a>{{ paper.id }}</a>

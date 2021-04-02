@@ -1,0 +1,73 @@
+from flask import Flask, render_template, url_for, request, redirect, flash,\
+    send_from_directory, current_app, send_from_directory
+from app import app, faiss_index, sent_bert
+from app.forms import TitleLink
+from app.models import Paper
+from app.utils import vector_search, allowed_file
+from app.config import Config as cf
+from werkzeug.utils import secure_filename
+from sqlalchemy.sql.expression import case
+import os
+
+
+@app.route('/')
+def index():
+    return render_template("searchpage.html")
+
+
+@app.route('/process', methods=["POST", "GET"])
+def process():
+    if request.method == 'POST':
+        query_form = request.form['query'].strip()
+        query_arg = ''
+    else:
+        query_arg = request.args.get('query').strip()
+        query_form = ''
+    query = query_form if query_form != '' else query_arg
+    if query:
+        # Get paper IDs
+        D, I = vector_search([query], sent_bert, faiss_index, 100)
+        ids = I.flatten().tolist()
+        # print(ids)
+        ids_order = case({id: index for index, id in enumerate(ids)}, value=Paper.id)
+        page = request.args.get('page', default=1, type=int)
+        papers = Paper.query.filter(Paper.id.in_(ids)).order_by(ids_order).paginate(page=page, per_page=cf.ROWS_PER_PAGE)
+    return render_template("results.html", papers=papers, query_form=query_form, query_arg=query_arg, host=cf.HOST)
+
+
+@app.route('/document', methods=['GET', 'POST'])
+def document():
+    # return redirect(url_for('document', filename='document.html'))
+    return render_template("document.html")
+
+
+@app.route('/static/docs/<path:filename>', methods=['GET', 'POST'])
+def download_file(filename):
+    doc_path = os.path.join(current_app.root_path, "static/docs")
+    return send_from_directory(doc_path, filename=filename,
+                               as_attachment=True)
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return render_template("searchpage.html")
+
+
+if __name__ == '__main__':
+    pass
+
+

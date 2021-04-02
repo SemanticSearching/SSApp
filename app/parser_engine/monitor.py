@@ -11,11 +11,10 @@ import mammoth
 import pysbd
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from parser_engine.database import write_to_db, write_to_html
+from database import write_to_db, write_to_html
 from sentence_transformers import SentenceTransformer
 
 
-seg = pysbd.Segmenter(language="en", clean=False)
 PATH_TO_FAISS = "../models/faiss_index.pickle"
 PATH_TO_PAPERS = "../models/papers.db"
 DIRECTORY_TO_WATCH = "../static/docxs"

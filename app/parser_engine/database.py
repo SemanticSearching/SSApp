@@ -1,17 +1,45 @@
-import pandas as pd
 import torch
 import os
 import faiss
-import pickle
 import numpy as np
 import pickle
 import mammoth
-from parser_engine.docx_parser import docx_parser
-from ssapp import db, Paper
+from .docx_parser import docx_parser
 from urllib.parse import quote_plus
+from os.path import join
+from app import db, sent_bert
+from app.models import Paper
+from app.config import Config as cf
 
 
-def gen_link(title, sent, num=30, min_words=3):
+def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words):
+    """
+
+    Args:
+        path_to_papers:
+        path_to_faiss:
+        model:
+        win_size:
+        max_words:
+
+    Returns:
+
+    """
+    # remove all the html in
+    if os.path.exists(cf.PATH_TO_HTMLS):
+        os.rmdir(cf.PATH_TO_HTMLS)
+        os.mkdir(cf.PATH_TO_HTMLS)
+    else:
+        os.mkdir(cf.PATH_TO_HTMLS)
+    # gen the faiss indexs
+    doc_files = os.listdir(cf.PATH_TO_DOCXS)
+    for doc in doc_files:
+        filepath = join(cf.PATH_TO_DOCXS, doc)
+        write_to_db(filepath, path_to_papers, path_to_faiss, model, win_size, max_words)
+        write_to_html(filepath)
+
+
+def gen_link(title, sent, num=30):
     """
     given a sent, gen loc flag
     Args:
@@ -21,17 +49,13 @@ def gen_link(title, sent, num=30, min_words=3):
     Returns:
 
     """
-    # sents = seg.segment(sent)
-    # prefix = "http://127.0.0.1:5000/static/htmls/{}.html#:~:text=".format(title)
-    prefix = "https://semanticsearch.site/static/htmls/{}.html#:~:text=".format(title)
+    prefix = "https://{}/static/htmls/" + "{}.html#:~:text=".format(title)
     sents = sent.strip().split(" ")
     if "" in sents:
         sents.remove("")
     if " " in sents:
         sents.remove(" ")
-    if len(sents) <min_words:
-        return prefix
-    elif len(sents) < 2*num:
+    if len(sents) < 2*num:
         # only first part
         first = quote_plus(sent.strip()).replace("+", "%20")
         return prefix + first
@@ -77,7 +101,7 @@ def write_to_html(filepath: str):
     with open(filepath, "rb") as docx_file:
         result = mammoth.convert_to_html(docx_file)
         html = result.value  # The generated HTML
-        html_path = os.path.join("../static/htmls", newfile.replace(".docx", ".html"))
+        html_path = os.path.join(cf.PATH_TO_HTMLS, newfile.replace(".docx", ".html"))
         with open(html_path, "a+") as f:
             f.write(html)
             print("new file %s is done" % newfile)
@@ -118,4 +142,6 @@ def write_to_db(filepath: str, path_to_papers: str, path_to_faiss: str, model, w
 
 
 if __name__ == '__main__':
-    write_to_db("test", ["content1", "content2", "content3"])
+    if not os.path.exists(cf.PATH_TO_FAISS):
+        gen_faiss(cf.PATH_TO_HTMLS, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS)
+
