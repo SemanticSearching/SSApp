@@ -14,6 +14,8 @@ def sents_preprocessor(sents: list):
         elif sent == 'BETWEEN':
             continue
 
+        # remove redundant spaces
+        sent = re.sub(' +', ' ', sent)
 
         new_sents.append(sent)
 
