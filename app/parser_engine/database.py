@@ -13,7 +13,7 @@ from app.config import Config as cf
 import urllib
 
 
-def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words, server):
+def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words, server, faissindex):
     """
 
     Args:
@@ -36,7 +36,7 @@ def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words, server)
     doc_files = os.listdir(cf.PATH_TO_DOCXS)
     for doc in doc_files:
         filepath = join(cf.PATH_TO_DOCXS, doc)
-        write_to_db(filepath, path_to_papers, path_to_faiss, model, win_size, max_words, server)
+        write_to_db(filepath, path_to_papers, path_to_faiss, model, win_size, max_words, server, faissindex)
         write_to_html(filepath)
 
 
@@ -55,19 +55,6 @@ def gen_link(title, sent, server):
     else:
         prefix = "https://{}/static/htmls/" + "{}.html#:~:text=".format(title)
     sent = sent.strip()
-    # if "" in sents:
-    #     sents.remove("")
-    # if " " in sents:
-    #     sents.remove(" ")
-    # if len(sents) < 2*num:
-    #     # only first part
-    #     first = quote_plus(sent.strip()).replace("+", "%20")
-    #     return prefix + first
-    # else:
-    #     # both first and last part
-    #     first = quote_plus(" ".join(sents[:num])).replace("+", "%20")
-    #     last = quote_plus(" ".join(sents[-num:])).replace("+", "%20")
-    #     return prefix + first + "," + last
     return prefix + urllib.parse.quote(sent, safe='~()*!.\'')
 
 
@@ -79,7 +66,7 @@ def update_papers(title, sents, ids, server):
     db.session.commit()
 
 
-def update_papers_index(embeddings, all_ids, path_to_faiss):
+def update_papers_index(embeddings, all_ids, path_to_faiss, faissindex):
     """
     update the path_to_faiss.pickle file
     Args:
@@ -88,7 +75,9 @@ def update_papers_index(embeddings, all_ids, path_to_faiss):
         path_to_faiss:
     Returns:
     """
-    if os.path.exists(path_to_faiss):
+    if faissindex is not None:
+        indexs = faissindex
+    elif os.path.exists(path_to_faiss):
         with open(path_to_faiss, "rb") as h:
             indexs = pickle.load(h)
             indexs = faiss.deserialize_index(indexs)
@@ -112,7 +101,7 @@ def write_to_html(filepath: str):
             print("new file %s is done" % newfile)
 
 
-def write_to_db(filepath: str, path_to_papers: str, path_to_faiss: str, model, win_size:int, max_words:int, server:str):
+def write_to_db(filepath: str, path_to_papers: str, path_to_faiss: str, model, win_size:int, max_words:int, server:str, faissindex):
     """
     give one paper, update the papers.pickle and papers_index.pickle
     papers.pickle: np.array([title, sents, embedding, id])
@@ -143,7 +132,7 @@ def write_to_db(filepath: str, path_to_papers: str, path_to_faiss: str, model, w
     embeddings = np.array([embedding for embedding in embeddings]).astype("float32")
     update_papers(title, all_sents, all_ids, server)
     print("papers are stored in database")
-    update_papers_index(embeddings, all_ids, path_to_faiss)
+    update_papers_index(embeddings, all_ids, path_to_faiss, faissindex)
 
 
 if __name__ == '__main__':

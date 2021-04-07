@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, request, redirect, flash,\
     send_from_directory, current_app, send_from_directory
-from app import app, faiss_index, sent_bert
+from app import app, faiss_index, sent_bert, write_to_html, write_to_db
 from app.forms import TitleLink
 from app.models import Paper
 from app.utils import vector_search, allowed_file
@@ -8,6 +8,7 @@ from app.config import Config as cf
 from werkzeug.utils import secure_filename
 from sqlalchemy.sql.expression import case
 import os
+from os.path import join
 
 
 @app.route('/')
@@ -43,7 +44,7 @@ def document():
 
 @app.route('/static/docs/<path:filename>', methods=['GET', 'POST'])
 def download_file(filename):
-    doc_path = os.path.join(current_app.root_path, "static/docs")
+    doc_path = join(current_app.root_path, "static/docs")
     return send_from_directory(doc_path, filename=filename,
                                as_attachment=True)
 
@@ -63,7 +64,11 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            filepath = join(cf.UPLOAD_FOLDER, filename)
+            file.save(filepath)
+            write_to_db(filepath, cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS, cf.SERVER, faiss_index)
+            write_to_html(filepath)
+            flash("update faiss index successfully")
             return render_template("searchpage.html")
 
 
