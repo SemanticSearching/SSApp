@@ -52,24 +52,14 @@ def download_file(filename):
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = join(cf.UPLOAD_FOLDER, filename)
-            file.save(filepath)
-            write_to_db(filepath, cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS, cf.SERVER, faiss_index)
-            write_to_html(filepath)
-            flash("update faiss index successfully")
-            return render_template("searchpage.html")
+        for key, file in request.files.items():
+            if key.startswith('file'):
+                filename = secure_filename(file.filename)
+                filepath = join(cf.UPLOAD_FOLDER, filename)
+                file.save(filepath)
+                write_to_db(filepath, cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS, cf.SERVER, faiss_index)
+                write_to_html(filepath)
+        return "indexs are update"
 
 
 if __name__ == '__main__':

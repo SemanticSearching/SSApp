@@ -4,11 +4,13 @@ from flask import Flask
 from app.config import Config as cf
 from flask_sqlalchemy import SQLAlchemy
 from app.utils import load_bert_model, load_faiss_index
+from flask_dropzone import Dropzone
 
 
 app = Flask(__name__, static_folder=cf.PATH_TO_STATIC, template_folder=cf.PATH_TO_TEMPLATES)
 app.config.from_object(cf)
 db = SQLAlchemy(app)
+dropzone = Dropzone(app)
 sbd = pysbd.Segmenter(language="en", clean=False)
 sent_bert = load_bert_model()
 
