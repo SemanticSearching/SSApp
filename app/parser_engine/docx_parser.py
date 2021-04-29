@@ -1,6 +1,7 @@
 from docx import Document
 import pysbd
 import re
+import mammoth
 
 def sents_preprocessor(sents: list):
     new_sents = []
@@ -89,7 +90,12 @@ def docx_parser(filepath: str, sliding_window: int =3, max_words: int=100):
 
 if __name__ == '__main__':
     # Debug
-    segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/InformationSecurityRequirements.docx')
-    segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/BancoPopExhibit.docx')
-    segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/JLL_SAICContract.docx')
-    segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/NGXeroxeMPS.docx')
+    # segments = docx_parser(filepath='/home/ywang/SSApp/app/static/docxs/InformationSecurityRequirements.docx')
+    # segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/BancoPopExhibit.docx')
+    # segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/JLL_SAICContract.docx')
+    # segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/NGXeroxeMPS.docx')
+
+    with open("/home/ywang/SSApp/app/static/docxs/InformationSecurityRequirements.docx", "rb") as docx_file:
+        result = mammoth.convert_to_html(docx_file)
+        html = result.value  # The generated HTML
+        print('done')
