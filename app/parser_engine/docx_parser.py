@@ -60,7 +60,7 @@ def docx_parser(filepath: str, sliding_window: int =3, max_words: int=100):
 
     """
     document = Document(filepath)
-    segmenter = pysbd.Segmenter(language="en", clean=False)
+    segmenter = pysbd.Segmenter(language="en", clean=True)
     segs = []
 
     for paragraph in document.paragraphs:
@@ -94,8 +94,9 @@ if __name__ == '__main__':
     # segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/BancoPopExhibit.docx')
     # segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/JLL_SAICContract.docx')
     # segments = docx_parser(filepath='/home/ywang/SSApp/static/docxs/NGXeroxeMPS.docx')
+    segments = docx_parser(filepath='/home/ywang/SSApp/app/static/docxs/OGCS200402GeneralConditionsforMaintenaceContracts.docx')
 
-    with open("/home/ywang/SSApp/app/static/docxs/InformationSecurityRequirements.docx", "rb") as docx_file:
-        result = mammoth.convert_to_html(docx_file)
-        html = result.value  # The generated HTML
-        print('done')
+    # with open("/home/ywang/SSApp/app/static/docxs/OGCS200402GeneralConditionsforMaintenaceContracts.docx", "rb") as docx_file:
+    #     result = mammoth.convert_to_html(docx_file)
+    #     html = result.value  # The generated HTML
+    #     print('done')
