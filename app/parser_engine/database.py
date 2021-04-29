@@ -96,7 +96,7 @@ def write_to_html(filepath: str):
         result = mammoth.convert_to_html(docx_file)
         html = result.value  # The generated HTML
         html_path = os.path.join(cf.PATH_TO_HTMLS, newfile.replace(".docx", ".html"))
-        with open(html_path, "a+") as f:
+        with open(html_path, "a+", encoding="utf8") as f:
             f.write(html)
             print("new file %s is done" % newfile)
 

@@ -2,10 +2,10 @@ import unittest
 from sent_seg import spacy_sbd, py_sbd
 
 # use spacy sbd
-test_fun = spacy_sbd
+# test_fun = spacy_sbd
 
 # use pySBD
-# test_fun = py_sbd
+test_fun = py_sbd
 
 
 class TestStringMethods(unittest.TestCase):
@@ -293,6 +293,12 @@ class TestStringMethods(unittest.TestCase):
         text = "One further habit which was somewhat weakened . . . was that of combining words into self-interpreting compounds. . . . The practice was not abandoned. . . ."
         self.assertEqual(test_fun(text),
                          ["One further habit which was somewhat weakened . . . was that of combining words into self-interpreting compounds.", ". . . The practice was not abandoned. . . ."])
+
+    # new add rule
+    def test_sent52(self):
+        text = "Civ. Stat. Ann."
+        self.assertEqual(test_fun(text),
+                         ["Civ. Stat. Ann."])
 
 
 if __name__ == '__main__':
