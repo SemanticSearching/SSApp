@@ -16,7 +16,7 @@ def sents_preprocessor(sents: list):
             continue
 
         # remove redundant spaces
-        sent = re.sub(' +', ' ', sent)
+        sent = " ".join(sent.split())
 
         new_sents.append(sent)
 

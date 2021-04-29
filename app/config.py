@@ -20,6 +20,13 @@ class Config(object):
     PATH_TO_HTMLS = join(basedir, "static/htmls")
     PATH_TO_STATIC = join(basedir, "static")
     PATH_TO_TEMPLATES = join(basedir, "templates")
+    DIRECTORY_TO_WATCH = join(basedir, "static/docxs")
     ALLOWED_EXTENSIONS = {'docx', 'pdf', 'doc'}
     PARSER_WIN = 3
     PARSER_MAX_WORDS = 100
+    # dropzone variable
+    DROPZONE_MAX_FILE_SIZE = 10
+    DROPZONE_ALLOWED_FILE_CUSTOM = True
+    DROPZONE_ALLOWED_FILE_TYPE = '.doc, .docx, .pdf'
+    DROPZONE_UPLOAD_MULTIPLE = True
+    DROPZONE_TIMEOUT = None
