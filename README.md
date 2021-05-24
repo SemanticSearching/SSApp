@@ -164,7 +164,8 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
 * Set Env Variable in py38
   ```angular2html
   conda activate py38
-  conda env config vars set HOST="your domain name"
+  conda env config vars set DOMAIN="your domain name"
+  conda env config vars set SERVER="AWS"
   ```
 * Configure Apache2
   * Enable SSL
