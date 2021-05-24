@@ -154,6 +154,8 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
 
 * Set Up Conda Env
   ```angular2html
+  git clone https://github.com/SemanticSearching/SSApp.git
+  cd SSApp
   conda env create -f py38.pml
   conda activate py38
   ```
