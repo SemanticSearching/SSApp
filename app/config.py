@@ -11,10 +11,10 @@ class Config(object):
 
     # function variables
     ROWS_PER_PAGE = 10
-    SERVER = os.environ.get('SERVER') or "AWS"
-    print(SERVER)
+    # SERVER = os.environ.get('SERVER') or "AWS"
     # SERVER = "LOCAL"
-    HOST = "localhost" if SERVER == "LOCAL" else "semanticsearch.site"
+    # HOST = "localhost" if SERVER == "LOCAL" else "semanticsearch.site"
+    HOST = os.environ.get("HOST") or "localhost"
     PATH_TO_FAISS = join(basedir, "db_storage/faiss_index.pickle")
     PATH_TO_DB = join(basedir, "db_storage/papers.db")
     PATH_TO_DB_FOLDER = join(basedir, "db_storage")
