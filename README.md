@@ -34,7 +34,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/SemanticSearching/SSApp">
-    <img src="./images/logo.png" alt="Logo" width="80" height="80">
+    <img src="./images/logo.png" alt="Logo" width="42.4" height="35.6">
   </a>
 
 <h3 align="center">Semantic Segment Search</h3>
