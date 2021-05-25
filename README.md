@@ -269,17 +269,23 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
 
 <!-- CONTRIBUTING -->
 
-## Contributing
+[comment]: <> (## Contributing)
 
-Contributions are what make the open source community such an amazing place to
-be learn, inspire, and create. Any contributions you make are **greatly
-appreciated**.
+[comment]: <> (Contributions are what make the open source community such an amazing place to)
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+[comment]: <> (be learn, inspire, and create. Any contributions you make are **greatly)
+
+[comment]: <> (appreciated**.)
+
+[comment]: <> (1. Fork the Project)
+
+[comment]: <> (2. Create your Feature Branch &#40;`git checkout -b feature/AmazingFeature`&#41;)
+
+[comment]: <> (3. Commit your Changes &#40;`git commit -m 'Add some AmazingFeature'`&#41;)
+
+[comment]: <> (4. Push to the Branch &#40;`git push origin feature/AmazingFeature`&#41;)
+
+[comment]: <> (5. Open a Pull Request)
 
 <!-- LICENSE -->
 
