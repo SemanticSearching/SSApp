@@ -1,6 +1,7 @@
 import torch
 import os
 import faiss
+from faiss import normalize_L2
 import numpy as np
 import pickle
 import mammoth
@@ -82,7 +83,7 @@ def update_papers_index(embeddings, all_ids, path_to_faiss, faissindex):
             indexs = pickle.load(h)
             indexs = faiss.deserialize_index(indexs)
     else:
-        indexs = faiss.IndexFlatL2(embeddings.shape[1])
+        indexs = faiss.IndexFlatIP(embeddings.shape[1])
         indexs = faiss.IndexIDMap(indexs)
     indexs.add_with_ids(embeddings, np.array(all_ids))
     with open(path_to_faiss, "wb") as f_faiss:
@@ -131,8 +132,9 @@ def write_to_db(filepath: str, path_to_papers: str, path_to_faiss: str, model, w
     # change datatype
     embeddings = np.array([embedding for embedding in embeddings]).astype("float32")
     update_papers(title, all_sents, all_ids, server)
-    print("papers are stored in database")
-    update_papers_index(embeddings, all_ids, path_to_faiss, faissindex)
+    normalize_L2(embeddings)
+    update_papers_index(embeddings, all_ids, path_to_faiss,
+                        faissindex)
 
 
 if __name__ == '__main__':

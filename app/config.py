@@ -31,3 +31,7 @@ class Config(object):
     DROPZONE_ALLOWED_FILE_TYPE = '.doc, .docx, .pdf'
     DROPZONE_UPLOAD_MULTIPLE = True
     DROPZONE_TIMEOUT = None
+    # faiss search engine parameters
+    TOPK = 100
+    THRESHOLD = 0.60
+    SHOW_SCORE = False

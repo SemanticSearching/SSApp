@@ -26,53 +26,63 @@
     </div>
 
     <div class="container">
-        {% for paper in papers.items %}
-            <div class="container">
-                <h3><a href={{ paper.link.format(host) }}>{{ paper.title+".docx" }}</a></h3>
+        {% if papers %}
+            {% for paper in papers.items %}
+                <div class="container">
+                    <h3><a href={{ paper.link.format(host) }}>{{ paper.title+".docx" }}</a></h3>
+                </div>
+                <div class="container">
+                    {% if show_score %}
+                        <a>{{ ids_dis[paper.id] }}</a>
+                    {% endif %}
+                    <a>{{ paper.seg }}</a>
+                </div>
+                <br>
+            {% endfor %}
+        {% else %}
+            <div class="container text-center">
+                <textarea class="text-center" style="border:0px">No results are found</textarea>
             </div>
-            <div class="container">
-{#                <a>{{ paper.id }}</a>#}
-                <a>{{ paper.seg }}</a>
-            </div>
-            <br>
-        {% endfor %}
+        {% endif %}
     </div>
 
 
-    <!-- Pagination Links-->
-    <div class="text-center">
-        <a href="{{ url_for('process', page=papers.prev_num, query=query_form+query_arg) }}"
-           class="btn btn-outline-dark
-       {% if papers.page == 1 %}disabled{% endif %}">
-            &laquo;
-        </a>
-        <!-- Loop through the number of pages to display a link for each-->
-        {% for page_num in papers.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-            {% if page_num %}
-                <!-- Check for the active page and set the link to "Active"-->
-                {% if papers.page == page_num %}
-                    <a href="{{ url_for('process', page=page_num, query=query_form+query_arg) }}"
-                       class="btn btn-dark">
-                        {{ page_num }}
-                    </a>
+    {% if papers %}
+        <!-- Pagination Links-->
+        <div class="text-center">
+            <a href="{{ url_for('process', page=papers.prev_num, query=query_form+query_arg) }}"
+               class="btn btn-outline-dark
+           {% if papers.page == 1 %}disabled{% endif %}">
+                &laquo;
+            </a>
+            <!-- Loop through the number of pages to display a link for each-->
+            {% for page_num in papers.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                    <!-- Check for the active page and set the link to "Active"-->
+                    {% if papers.page == page_num %}
+                        <a href="{{ url_for('process', page=page_num, query=query_form+query_arg) }}"
+                           class="btn btn-dark">
+                            {{ page_num }}
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('process', page=page_num, query=query_form+query_arg) }}"
+                           class="btn btn-outline-dark">
+                            {{ page_num }}
+                        </a>
+                    {% endif %}
                 {% else %}
-                    <a href="{{ url_for('process', page=page_num, query=query_form+query_arg) }}"
-                       class="btn btn-outline-dark">
-                        {{ page_num }}
-                    </a>
+                    ...
                 {% endif %}
-            {% else %}
-                ...
-            {% endif %}
-        {% endfor %}
-        <a href="{{ url_for('process', page=papers.next_num, query=query_form+query_arg) }}"
-           class="btn btn-outline-dark
-       {% if papers.page == papers.pages %}disabled{% endif %}">
-            &raquo;
-        </a>
-    </div>
-    <p class="text-center mt-3">
-        Showing page {{ papers.page }} of {{ papers.pages }}
-    </p>
+            {% endfor %}
+            <a href="{{ url_for('process', page=papers.next_num, query=query_form+query_arg) }}"
+               class="btn btn-outline-dark
+           {% if papers.page == papers.pages %}disabled{% endif %}">
+                &raquo;
+            </a>
+        </div>
+        <p class="text-center mt-3">
+            Showing page {{ papers.page }} of {{ papers.pages }}
+        </p>
+    {% endif %}
 
 {% endblock %}

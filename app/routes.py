@@ -27,13 +27,20 @@ def process():
     query = query_form if query_form != '' else query_arg
     if query:
         # Get paper IDs
-        D, I = vector_search([query], sent_bert, faiss_index, 100)
-        ids = I.flatten().tolist()
+        distances, ids = vector_search([query], sent_bert, faiss_index,
+                                       cf.TOPK, cf.THRESHOLD)
+        ids_dis = {ids[i]: distances[i] for i in range(len(ids))}
         # print(ids)
         ids_order = case({id: index for index, id in enumerate(ids)}, value=Paper.id)
         page = request.args.get('page', default=1, type=int)
-        papers = Paper.query.filter(Paper.id.in_(ids)).order_by(ids_order).paginate(page=page, per_page=cf.ROWS_PER_PAGE)
-    return render_template("results.html", papers=papers, query_form=query_form, query_arg=query_arg, host=cf.HOST)
+        if ids:
+            papers = Paper.query.filter(Paper.id.in_(ids)).order_by(ids_order).paginate(page=page, per_page=cf.ROWS_PER_PAGE)
+        else:
+            papers = None
+        return render_template("results.html", papers=papers,
+                               ids_dis=ids_dis, query_form=query_form,
+                               query_arg=query_arg, host=cf.HOST,
+                               show_score=cf.SHOW_SCORE)
 
 
 @app.route('/document', methods=['GET', 'POST'])
