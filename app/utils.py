@@ -47,4 +47,11 @@ def vector_search(query, model, index, num_results=10, threshold=0.75):
     index = I.flatten()
     distance = D.flatten()
     filter = distance > threshold
+    if distance[filter].tolist():
+        pass
+    else:
+        index = index[:3]
+        distance = distance[:3]
+        filter = distance > threshold/2
     return distance[filter].tolist(), index[filter].tolist()
+
