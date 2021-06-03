@@ -1,0 +1,26 @@
+import pytest
+import numpy as np
+from pytest import approx
+from app.utils import load_bert_model
+from faiss import normalize_L2
+from scipy import spatial
+
+model = load_bert_model()
+cos_score = 0.4467635154724121
+query = "afasdfsfsafsafafasdfafsfasfweftwerw2t2t"
+result = "SAIC.vendor@am.jll.com"
+
+query_embedding = model.encode([query])
+normalize_L2(query_embedding)
+result_embedding = model.encode([result])
+normalize_L2(result_embedding)
+cos_score_check = np.sum(query_embedding*result_embedding)
+sos_score_scipy = 1 -spatial.distance.cosine(query_embedding, result_embedding)
+
+
+def test_cos_score():
+    assert cos_score_check == approx(cos_score)
+    assert sos_score_scipy == approx(cos_score)
+
+
+print("test is done")

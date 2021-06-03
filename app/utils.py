@@ -41,7 +41,7 @@ def vector_search(query, model, index, num_results=10, threshold=0.75):
         I (:obj:`numpy.array` of `int`): Paper ID of the results.
 
     """
-    vector = model.encode(list(query))
+    vector = model.encode(query)
     normalize_L2(vector)
     D, I = index.search(np.array(vector).astype("float32"), k=num_results)
     index = I.flatten()
