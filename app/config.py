@@ -35,3 +35,7 @@ class Config(object):
     TOPK = 100
     THRESHOLD = 0.60
     SHOW_SCORE = False
+    # User name and password
+    USERNAME = os.environ.get("EMAIL") or "parc"
+    PASSWORD = os.environ.get("PASSWORD") or "sss"
+    #
