@@ -168,6 +168,8 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
   conda activate py38
   conda env config vars set DOMAIN="your domain name"
   conda env config vars set SERVER="AWS"
+  conda env config vars set USERNAME="your user name, default is parc"
+  conda env config vars set PASSWORD="your password, default is sss"
   ```
 * Configure Apache2
   * Enable SSL
