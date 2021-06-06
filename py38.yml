@@ -142,6 +142,7 @@ dependencies:
     - mammoth==1.4.15
     - nltk==3.5
     - python-docx==0.8.10
+    - pysbd==0.3.4
     - s3fs==0.5.2
     - scikit-learn==0.24.1
     - scipy==1.6.0
@@ -155,5 +156,4 @@ dependencies:
     - wrapt==1.12.1
     - wtforms==2.3.3
 variables:
-  HOST: semanticsearch.site
-  SERVER: AWS
+  SERVER: LOCAL
