@@ -285,6 +285,7 @@ ENV FLASK_APP=ssapp.py
 ENV FLASK_ENV=development
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "py38", "flask","run", "--host=0.0.0.0"]
 ```
+## Build the Images
 Use the following two commands to build the image and run the container.
 ```angular2html
 sudo docker build -t ssapp:latest .
