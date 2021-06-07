@@ -111,8 +111,18 @@ Semantic Segment Search (SSS) is a searching engine which empowers the
 users to search the semantic related results on segment level.
 ### Usage
 * When you first time run this web app, it will find if 
-  `/app/db_storage/faiss_index.pickle` 
-  exists, 
+  `/app/db_storage/faiss_index.pickle` exists. If this file is not existing,
+  the app will parse the files in `/app/static/docxs`. You can't login the 
+  app until all the files in `/app/static/docxs` are parsed. The fist time 
+  paring will be time-consuming if you have many files stored in `/app/static/docxs`.
+  
+* The only way to add file dynamically after you login the app 
+  successfully is to upload the file through the 
+  `drop zone` field. If you have many files to be parsed, I recommend you 
+  use `scp` command to upload all your files to `/app/static/docxs` and 
+  then build the `Dockerfile` again.
+  
+* Currently, this app only support `.docx` file.
 ### Built With
 
 * [pySBD](https://github.com/nipunsadvilkar/pySBD)
@@ -258,7 +268,7 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
 There are three env variables you need to define in Dockerfile:`DOMAIN`, 
 `USERNAME` and `PASSWORD`. For `DOMAIN`, you need to use the full domain 
 name which begins with `http://` or `https://`. `Flask` use the default 
-port `80`, if you use another ports, you need to write it into your domain 
+port `80`, if you use other ports, you need to write it into your domain 
 name, like `https://semanticsearch.site:800`.
 ```angular2html
 FROM continuumio/miniconda3
