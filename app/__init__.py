@@ -25,7 +25,8 @@ from app.models import User
 if not os.path.exists(cf.PATH_TO_FAISS):
     if not os.path.exists(cf.PATH_TO_DB_FOLDER):
         os.mkdir(cf.PATH_TO_DB_FOLDER)
-    gen_faiss(cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS, cf.SERVER, None)
+    gen_faiss(cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN,
+              cf.PARSER_MAX_WORDS, cf.DOMAIN, None)
     db.create_all()
     u = User(username=cf.USERNAME)
     u.set_password(cf.PASSWORD)

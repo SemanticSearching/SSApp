@@ -73,6 +73,7 @@
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
+        <li><a href="#usage">Usage</a></li>
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
@@ -108,7 +109,10 @@
 
 Semantic Segment Search (SSS) is a searching engine which empowers the 
 users to search the semantic related results on segment level.
-
+### Usage
+* When you first time run this web app, it will find if 
+  `/app/db_storage/faiss_index.pickle` 
+  exists, 
 ### Built With
 
 * [pySBD](https://github.com/nipunsadvilkar/pySBD)

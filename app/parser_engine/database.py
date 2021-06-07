@@ -12,6 +12,7 @@ from app import db, sent_bert
 from app.models import Paper
 from app.config import Config as cf
 import urllib
+import shutil
 
 
 def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words, domain, faissindex):
@@ -29,7 +30,7 @@ def gen_faiss(path_to_papers, path_to_faiss, model, win_size, max_words, domain,
     """
     # remove all the html in
     if os.path.exists(cf.PATH_TO_HTMLS):
-        os.rmdir(cf.PATH_TO_HTMLS)
+        shutil.rmtree(cf.PATH_TO_HTMLS)
         os.mkdir(cf.PATH_TO_HTMLS)
     else:
         os.mkdir(cf.PATH_TO_HTMLS)
