@@ -130,7 +130,7 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
 
 <!-- GETTING STARTED -->
 
-## Deploy the APP on AWS
+## Deploy the APP on Apache2
 
 ### Prerequisites
 
@@ -158,6 +158,8 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
   cd SSApp
   conda env create -f py38.pml
   conda activate py38
+  cd /app/parser_engine/pySBD
+  pip install -e ./
   ```
 * Set Up the Soft Link 
   ```angular2html
@@ -166,8 +168,8 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
 * Set Env Variable in py38
   ```angular2html
   conda activate py38
-  conda env config vars set DOMAIN="your domain name"
-  conda env config vars set SERVER="AWS"
+  conda env config vars set DOMAIN="your domain name begins with http:// or 
+  https://"
   conda env config vars set USERNAME="your user name, default is parc"
   conda env config vars set PASSWORD="your password, default is sss"
   ```
@@ -189,7 +191,7 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
         #ServerName www.example.com
 
         ServerAdmin webmaster@localhost
-        ServerName https://your-domain-name
+        ServerName your-domain-name
         ServerAlias your-domain-name
         DocumentRoot /var/www/html
         SSLEngine on
@@ -246,9 +248,34 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
   sudo chmod -vR g+w /your/path/of/SSApp/
   sudo service apache2 restart
   ```
-  
-  
 
+# Deploy the app on Docker Containers
+## Define the env vars in Dockerfile
+There are three env variables you need to define in Dockerfile:`DOMAIN`, 
+`USERNAME` and `PASSWORD`. For `DOMAIN`, you need to use the full domain 
+name which begins with `http://` or `https://`. `Flask` use the default 
+port `80`, if you use another ports, you need to write it into your domain 
+name, like `https://semanticsearch.site:800`.
+```angular2html
+FROM continuumio/miniconda3
+LABEL MAINTAINER="Mykhailo Nenych"
+WORKDIR /opt/app
+COPY ./ ./
+RUN conda env update --file py38.yml
+SHELL ["conda", "run", "-n", "py38", "/bin/bash", "-c"]
+RUN cd /opt/app/app/parser_engine/pySBD && pip install -e ./
+RUN conda env config vars set DOMAIN=http://semanticsearch.site
+RUN conda env config vars set USERNAME=parc
+RUN conda env config vars set PASSWORD=sss
+ENV FLASK_APP=ssapp.py
+ENV FLASK_ENV=development
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "py38", "flask","run", "--host=0.0.0.0"]
+```
+Use the following two commands to build the image and run the container.
+```angular2html
+sudo docker build -t ssapp:latest .
+sudo sudo docker run --name ssapp -d -p 80:5000 --rm ssapp:latest
+```
 
 <!-- USAGE EXAMPLES -->
 

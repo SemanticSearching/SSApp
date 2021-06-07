@@ -44,8 +44,7 @@ def process():
             papers = None
         return render_template("results.html", papers=papers,
                                ids_dis=ids_dis, query_form=query_form,
-                               query_arg=query_arg, host=cf.HOST,
-                               show_score=cf.SHOW_SCORE)
+                               query_arg=query_arg, show_score=cf.SHOW_SCORE)
 
 
 @app.route('/document', methods=['GET', 'POST'])
@@ -72,7 +71,8 @@ def upload_file():
                 filename = secure_filename(file.filename)
                 filepath = join(cf.UPLOAD_FOLDER, filename)
                 file.save(filepath)
-                write_to_db(filepath, cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS, cf.SERVER, faiss_index)
+                write_to_db(filepath, cf.PATH_TO_DB, cf.PATH_TO_FAISS,
+                            sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS, cf.DOMAIN, faiss_index)
                 write_to_html(filepath)
         return "indexs are update"
 
