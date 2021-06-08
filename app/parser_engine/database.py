@@ -52,7 +52,8 @@ def gen_link(title, sent, domain):
     Returns:
 
     """
-    prefix = f"{domain}/static/htmls/" + f"{title}.html#:~:text="
+    title_encode = urllib.parse.quote(title, safe='~()*!.\'')
+    prefix = f"{domain}/static/htmls/" + f"{title_encode}.html#:~:text="
     sent = sent.strip()
     return prefix + urllib.parse.quote(sent, safe='~()*!.\'')
 
