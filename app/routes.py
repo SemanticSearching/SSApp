@@ -1,6 +1,7 @@
 from flask import Flask, render_template, url_for, request, redirect, flash,\
     send_from_directory, current_app, send_from_directory
-from app import app, faiss_index, sent_bert, write_to_html, write_to_db
+from app import app, gen_faiss, load_faiss_index, sent_bert, write_to_html, \
+    write_to_db
 from app.forms import TitleLink
 from app.models import Paper, User
 from app.forms import LoginForm
@@ -15,15 +16,24 @@ from werkzeug.urls import url_parse
 import urllib
 
 
+faiss_index = None
+
+
 @app.route('/')
 @login_required
 def index():
+    global faiss_index
+    if not os.path.exists(cf.PATH_TO_FAISS):
+        gen_faiss(cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN,
+              cf.PARSER_MAX_WORDS)
+        faiss_index = load_faiss_index(cf.PATH_TO_FAISS)
     return render_template("searchpage.html")
 
 
 @app.route('/process', methods=["POST", "GET"])
 @login_required
 def process():
+    global faiss_index
     if request.method == 'POST':
         query_form = request.form['query'].strip()
         query_arg = ''
@@ -73,6 +83,7 @@ def download_htmls(filename):
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload_file():
+    global faiss_index
     if request.method == 'POST':
         for key, file in request.files.items():
             if key.startswith('file'):
