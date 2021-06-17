@@ -242,6 +242,15 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
         #Include conf-available/serve-cgi-bin.conf
     </VirtualHost>
     ```
+    
+* ssapp.wsgi
+  
+  ```angular2html
+  import sys
+  sys.path.insert(0, '/var/www/html/SSApp')
+  from ssapp import app as application
+  ```
+  
 * Create a Group
   ```angular2html
   # create a group named ssapp

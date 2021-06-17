@@ -31,7 +31,7 @@ if not os.path.exists(cf.PATH_TO_FAISS):
     db.session.add(u)
     db.session.commit()
     gen_faiss(cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN,
-              cf.PARSER_MAX_WORDS, cf.DOMAIN, None)
+              cf.PARSER_MAX_WORDS)
 faiss_index = load_faiss_index(cf.PATH_TO_FAISS)
 
 from app import routes, models

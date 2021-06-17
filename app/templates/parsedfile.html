@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="semantic-search" style="font-family: sans-serif; padding: 50px;">
+
+        <div class="logo text-center">
+            <a href={{url_for('checkfile')}}>
+                <img  src="./static/imgs/logo1.png"
+                 width="212" height="178">
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if papers %}
+            {% for index, (paper, link) in enumerate(papers) %}
+                <div class="container">
+                    <h3><a href="{{ url_for('static', filename="htmls/",
+                    _external=True) + link }}"
+                           target="_blank">{{str(index) + "|title|" +
+                           paper}}</a></h3>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="container text-center">
+                <textarea class="text-center" style="border:0px">No documents
+                    are parsed</textarea>
+            </div>
+        {% endif %}
+    </div>
+
+
+{% endblock %}

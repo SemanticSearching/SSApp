@@ -12,6 +12,7 @@ import os
 from os.path import join
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
+import urllib
 
 
 @app.route('/')
@@ -62,6 +63,13 @@ def download_file(filename):
                                as_attachment=True)
 
 
+@app.route('/static/htmls/<path:filename>', methods=['GET', 'POST'])
+@login_required
+def download_htmls(filename):
+    doc_path = join(current_app.root_path, "static/htmls")
+    return send_from_directory(doc_path, filename=filename)
+
+
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload_file():
@@ -99,6 +107,19 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('/login'))
+
+
+@app.route('/check')
+@login_required
+def checkfile():
+    files = os.listdir(cf.PATH_TO_HTMLS)
+    links = [urllib.parse.quote(file, safe='~()*!.\'') for file in files]
+    return render_template("parsedfile.html", papers=zip(files, links))
+
+
+@app.context_processor
+def inject_enumerate():
+    return dict(enumerate=enumerate, str=str)
 
 
 if __name__ == '__main__':

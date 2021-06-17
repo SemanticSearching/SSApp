@@ -11,8 +11,6 @@ class Config(object):
 
     # function variables
     ROWS_PER_PAGE = 10
-    DOMAIN = os.environ.get('DOMAIN') or "http://semanticsearch.site"
-    print(f"domain is {DOMAIN}")
     PATH_TO_FAISS = join(basedir, "db_storage/faiss_index.pickle")
     PATH_TO_DB = join(basedir, "db_storage/papers.db")
     PATH_TO_DB_FOLDER = join(basedir, "db_storage")
@@ -21,13 +19,13 @@ class Config(object):
     PATH_TO_STATIC = join(basedir, "static")
     PATH_TO_TEMPLATES = join(basedir, "templates")
     DIRECTORY_TO_WATCH = join(basedir, "static/docxs")
-    ALLOWED_EXTENSIONS = {'docx', 'pdf', 'doc'}
+    ALLOWED_EXTENSIONS = {'docx', 'pdf'}
     PARSER_WIN = 3
     PARSER_MAX_WORDS = 100
     # dropzone variable
     DROPZONE_MAX_FILE_SIZE = 10
     DROPZONE_ALLOWED_FILE_CUSTOM = True
-    DROPZONE_ALLOWED_FILE_TYPE = '.doc, .docx, .pdf'
+    DROPZONE_ALLOWED_FILE_TYPE = '.docx'
     DROPZONE_UPLOAD_MULTIPLE = True
     DROPZONE_TIMEOUT = None
     # faiss search engine parameters

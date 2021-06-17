@@ -5,7 +5,6 @@ COPY ./ ./
 RUN conda env update --file py38.yml
 SHELL ["conda", "run", "-n", "py38", "/bin/bash", "-c"]
 RUN cd /opt/app/app/parser_engine/pySBD && pip install -e ./
-RUN conda env config vars set DOMAIN=http://semanticsearch.site
 RUN conda env config vars set USERNAME=parc
 RUN conda env config vars set PASSWORD=sss
 ENV FLASK_APP=ssapp.py
