@@ -19,7 +19,7 @@ class Config(object):
     PATH_TO_STATIC = join(basedir, "static")
     PATH_TO_TEMPLATES = join(basedir, "templates")
     DIRECTORY_TO_WATCH = join(basedir, "static/docxs")
-    ALLOWED_EXTENSIONS = {'docx', 'pdf'}
+    ALLOWED_EXTENSIONS = {'docx'}
     PARSER_WIN = 3
     PARSER_MAX_WORDS = 100
     # dropzone variable
