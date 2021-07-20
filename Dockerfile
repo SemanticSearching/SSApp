@@ -5,6 +5,7 @@ COPY ./ ./
 RUN conda env update --file py38.yml
 SHELL ["conda", "run", "-n", "py38", "/bin/bash", "-c"]
 RUN cd /opt/app/app/parser_engine/pySBD && pip install -e ./
+RUN flask db upgrade
 # PostGrel
 ARG DB_USER
 ARG DB_PASS
