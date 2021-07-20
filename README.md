@@ -273,31 +273,24 @@ In */parser_examples/parser.py*, I list some examples to extract the paragraphs 
   ```
 
 # Deploy the app on Docker Containers
-## Define the env vars in Dockerfile
-There are three env variables you need to define in Dockerfile:`DOMAIN`, 
-`USERNAME` and `PASSWORD`. For `DOMAIN`, you need to use the full domain 
-name which begins with `http://` or `https://`. `Flask` use the default 
-port `80`, if you use other ports, you need to write it into your domain 
-name, like `https://semanticsearch.site:800`.
+## Args in Docker
 ```angular2html
-FROM continuumio/miniconda3
-LABEL MAINTAINER="Mykhailo Nenych"
-WORKDIR /opt/app
-COPY ./ ./
-RUN conda env update --file py38.yml
-SHELL ["conda", "run", "-n", "py38", "/bin/bash", "-c"]
-RUN cd /opt/app/app/parser_engine/pySBD && pip install -e ./
-RUN conda env config vars set DOMAIN=http://semanticsearch.site
-RUN conda env config vars set USERNAME=parc
-RUN conda env config vars set PASSWORD=sss
-ENV FLASK_APP=ssapp.py
-ENV FLASK_ENV=development
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "py38", "flask","run", "--host=0.0.0.0"]
+# Database
+DB_USER: aws postgresql database user
+DB_PASS: aws postgresql database password
+DB_HOST: aws postgresql database host
+DB_NAME: aws postgresql database name
+# UI
+LOGIN_USER: login user
+LOGIN_PASSWORD: login password
 ```
 ## Build the Images
 Use the following two commands to build the image and run the container.
 ```angular2html
-sudo docker build -t ssapp:latest .
+sudo docker build -t ssapp:latest --build-arg DB_USER=xx --build-arg 
+DB_PASS=xx --build-arg DB_HOST=xx --build-arg DB_NAME=xx --build-arg 
+LOGIN_USER=xx --build-arg LOGIN_PASSWORD=xx .
+
 sudo sudo docker run --name ssapp -d -p 80:5000 --rm ssapp:latest
 ```
 
