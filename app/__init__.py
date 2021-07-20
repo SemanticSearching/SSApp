@@ -25,6 +25,9 @@ sent_bert = load_bert_model()
 from app.parser_engine.database import gen_faiss, write_to_html, write_to_db
 from app.models import User, Paper
 
+
+with app.app_context():
+    db.create_all()
 login_user = User.query.filter_by(username=cf.USERNAME).first()
 if not login_user:
     u = User(username=cf.USERNAME)
