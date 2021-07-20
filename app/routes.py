@@ -89,10 +89,9 @@ def upload_file():
                 filename = secure_filename(file.filename)
                 filepath = join(cf.UPLOAD_FOLDER, filename)
                 file.save(filepath)
-                faiss_indexs = write_to_db(filepath, sent_bert,
+                faiss_indexs = write_to_db(filename, sent_bert,
                                            cf.PARSER_WIN,
                                            cf.PARSER_MAX_WORDS, faiss_indexs)
-                write_to_html(filepath)
         return "indexs are update"
 
 

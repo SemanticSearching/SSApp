@@ -9,6 +9,7 @@ from flask_migrate import Migrate
 from app.utils import load_bert_model, load_faiss_index
 from flask_dropzone import Dropzone
 from flask_login import LoginManager
+import boto3
 
 app = Flask(__name__, static_folder=cf.PATH_TO_STATIC, template_folder=cf.PATH_TO_TEMPLATES)
 app.config.from_object(cf)
@@ -31,6 +32,8 @@ if not login_user:
     db.session.add(u)
     db.session.commit()
 
+# client = boto3.client('s3', aws_access_key_id = cf.ACCESS_KEY,
+#                       aws_secret_access_key = cf.SECRET_ACCESS_KEY)
 
 from app import routes, models
 

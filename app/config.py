@@ -16,6 +16,8 @@ class Config(object):
                               f'{DB_PASS}@' + f'{DB_HOST}/' + f'{DB_NAME}'
     print(SQLALCHEMY_DATABASE_URI)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY_ID')
+    SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
     # function variables
     ROWS_PER_PAGE = 10
