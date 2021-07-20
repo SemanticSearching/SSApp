@@ -30,5 +30,4 @@ RUN conda env config vars set AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 #RUN conda env config vars set AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
 ENV FLASK_APP=ssapp.py
 ENV FLASK_ENV=development
-RUN python db_manage.py db upgrade
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "py38", "flask","run", "--host=0.0.0.0"]
