@@ -6,6 +6,7 @@ import pickle
 import faiss
 from faiss import normalize_L2
 import numpy as np
+import urllib
 
 ALLOWED_EXTENSIONS = {'docx', 'pdf', 'doc'}
 
@@ -54,4 +55,3 @@ def vector_search(query, model, index, num_results=10, threshold=0.75):
         distance = distance[:3]
         filter = distance > threshold/2
     return distance[filter].tolist(), index[filter].tolist()
-

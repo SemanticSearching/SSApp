@@ -6,7 +6,15 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'Sampleeeeeeeeeee'
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or join(basedir, 'static/docxs')
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'db_storage/papers.db')
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'db_storage/papers.db')
+    # username, password, host, db_name
+    DB_USER = os.environ.get('DB_USER')
+    DB_PASS = os.environ.get('DB_PASS')
+    DB_HOST = os.environ.get('DB_HOST')
+    DB_NAME = os.environ.get('DB_NAME')
+    SQLALCHEMY_DATABASE_URI = f'postgresql+psycopg2://{DB_USER}:' + \
+                              f'{DB_PASS}@' + f'{DB_HOST}/' + f'{DB_NAME}'
+    print(SQLALCHEMY_DATABASE_URI)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # function variables
@@ -33,7 +41,7 @@ class Config(object):
     THRESHOLD = 0.60
     SHOW_SCORE = False
     # User name and password
-    USERNAME = os.environ.get("EMAIL") or "parc"
-    PASSWORD = os.environ.get("PASSWORD") or "sss"
+    USERNAME = os.environ.get("LOGIN_USER") or "parc"
+    PASSWORD = os.environ.get("LOGIN_PASSWORD") or "sss"
     print(f"user name is: {USERNAME}, password is: {PASSWORD}")
     #

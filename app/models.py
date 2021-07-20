@@ -4,11 +4,17 @@ define the database structure
 from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from sqlalchemy.dialects.postgresql import ARRAY
+
 
 class Paper(db.Model):
-    title = db.Column(db.String(100), index=True)
-    seg = db.Column(db.String(1000), index=True)
-    link = db.Column(db.String(500), index=True)
+    title = db.Column(db.String, index=True)
+    link = db.Column(db.String, index=True)
+    seg = db.Column(db.String, index=True)
+    e1 = db.Column(ARRAY(db.FLOAT), index=True)
+    e2 = db.Column(ARRAY(db.FLOAT), index=True)
+    e3 = db.Column(ARRAY(db.FLOAT), index=True)
+    e4 = db.Column(ARRAY(db.FLOAT), index=True)
     id = db.Column(db.Integer, index=True, unique=True, primary_key=True)
 
     def __repr__(self):

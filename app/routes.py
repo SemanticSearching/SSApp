@@ -16,24 +16,23 @@ from werkzeug.urls import url_parse
 import urllib
 
 
-faiss_index = None
+faiss_indexs = None
 
 
 @app.route('/')
 @login_required
 def index():
-    global faiss_index
-    if not os.path.exists(cf.PATH_TO_FAISS):
-        gen_faiss(cf.PATH_TO_DB, cf.PATH_TO_FAISS, sent_bert, cf.PARSER_WIN,
-              cf.PARSER_MAX_WORDS)
-        faiss_index = load_faiss_index(cf.PATH_TO_FAISS)
+    global faiss_indexs
+    paper_all = Paper.query.all()
+    faiss_indexs = gen_faiss(paper_all, sent_bert, cf.PARSER_WIN,
+                            cf.PARSER_MAX_WORDS)
     return render_template("searchpage.html")
 
 
 @app.route('/process', methods=["POST", "GET"])
 @login_required
 def process():
-    global faiss_index
+    global faiss_indexs
     if request.method == 'POST':
         query_form = request.form['query'].strip()
         query_arg = ''
@@ -43,7 +42,7 @@ def process():
     query = query_form if query_form != '' else query_arg
     if query:
         # Get paper IDs
-        distances, ids = vector_search([query], sent_bert, faiss_index,
+        distances, ids = vector_search([query], sent_bert, faiss_indexs,
                                        cf.TOPK, cf.THRESHOLD)
         ids_dis = {ids[i]: distances[i] for i in range(len(ids))}
         # print(ids)
@@ -53,9 +52,9 @@ def process():
             papers = Paper.query.filter(Paper.id.in_(ids)).order_by(ids_order).paginate(page=page, per_page=cf.ROWS_PER_PAGE)
         else:
             papers = None
-        return render_template("results.html", papers=papers,
-                               ids_dis=ids_dis, query_form=query_form,
-                               query_arg=query_arg, show_score=cf.SHOW_SCORE)
+        return render_template("results.html", papers=papers, ids_dis=ids_dis,
+                               query_form=query_form, query_arg=query_arg,
+                               show_score=cf.SHOW_SCORE)
 
 
 @app.route('/document', methods=['GET', 'POST'])
@@ -83,15 +82,16 @@ def download_htmls(filename):
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload_file():
-    global faiss_index
+    global faiss_indexs
     if request.method == 'POST':
         for key, file in request.files.items():
             if key.startswith('file'):
                 filename = secure_filename(file.filename)
                 filepath = join(cf.UPLOAD_FOLDER, filename)
                 file.save(filepath)
-                write_to_db(filepath, cf.PATH_TO_DB, cf.PATH_TO_FAISS,
-                            sent_bert, cf.PARSER_WIN, cf.PARSER_MAX_WORDS, cf.DOMAIN, faiss_index)
+                faiss_indexs = write_to_db(filepath, sent_bert,
+                                           cf.PARSER_WIN,
+                                           cf.PARSER_MAX_WORDS, faiss_indexs)
                 write_to_html(filepath)
         return "indexs are update"
 

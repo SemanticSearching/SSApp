@@ -17,39 +17,6 @@ from pdf2docx import Converter
 from tqdm import tqdm
 
 
-def gen_faiss(path_to_papers: str, path_to_faiss: str, model, win_size: int
-              = 3, max_words: int = 100):
-    """
-    gen faiss index at initialization
-    Args:
-        path_to_papers: path to papers.db
-        path_to_faiss: path to faiss index
-        model: sentence_bert model
-        win_size: sliding window, default is 3
-        max_words: max words per segment, default is 300
-
-    Returns:
-        None
-
-    """
-    # remove all the html in
-    if os.path.exists(cf.PATH_TO_HTMLS):
-        shutil.rmtree(cf.PATH_TO_HTMLS)
-        os.mkdir(cf.PATH_TO_HTMLS)
-    else:
-        os.mkdir(cf.PATH_TO_HTMLS)
-    # gen the faiss indexs
-    doc_files = os.listdir(cf.PATH_TO_DOCXS)
-    for i in tqdm(range(len(doc_files))):
-        legal_name = doc_files[i].encode('utf-8', 'ignore').decode('utf-8')
-        if legal_name != doc_files[i]:
-            os.rename(join(cf.PATH_TO_DOCXS, doc_files[i]),
-                      join(cf.PATH_TO_DOCXS, legal_name))
-            print(f'non utf-8 characters in {legal_name} is removed')
-        write_to_db(legal_name, path_to_papers, path_to_faiss, model,
-                    win_size, max_words, None)
-
-
 def gen_link(title, sent) -> str:
     """
     given a sent, gen url
@@ -61,13 +28,59 @@ def gen_link(title, sent) -> str:
         gen percent encoded url
 
     """
+    title = ".".join(title.split(".")[:-1])
     title_encode = urllib.parse.quote(title, safe='~()*!.\'')
     prefix = f"htmls/{title_encode}.html#:~:text="
     sent = sent.strip()
     return prefix + urllib.parse.quote(sent, safe='~()*!.\'')
 
 
-def update_papers(title: str, sents: list, ids: list):
+def gen_faiss(paper_all, model, win_size: int= 3, max_words: int = 100):
+    """
+    gen faiss index at initialization
+    Args:
+        paper_all: All papers in database
+        model: sentence_bert model
+        win_size: sliding window, default is 3
+        max_words: max words per segment, default is 300
+
+    Returns:
+        None
+
+    """
+    # remove all the html in
+    if os.path.exists(cf.PATH_TO_HTMLS):
+        # shutil.rmtree(cf.PATH_TO_HTMLS)
+        # os.mkdir(cf.PATH_TO_HTMLS)
+        pass
+    else:
+        os.mkdir(cf.PATH_TO_HTMLS)
+    # gen the faiss indexs
+    paper_titles = set([i.title for i in paper_all])
+    faiss_indexs = None
+    # if database has data, load the data into faiss_indexs
+    if paper_all:
+        paper_ids = np.array([i.id for i in paper_all])
+        paper_embeddings = np.array([i.e1 + i.e2 + i.e3+ i.e4 for i in
+                                     paper_all]).astype("float32")
+        faiss_indexs = faiss.IndexFlatIP(paper_embeddings.shape[1])
+        faiss_indexs = faiss.IndexIDMap(faiss_indexs)
+        faiss_indexs.add_with_ids(paper_embeddings, paper_ids)
+    doc_files = os.listdir(cf.PATH_TO_DOCXS)
+    for i in tqdm(range(len(doc_files))):
+        legal_name = doc_files[i].encode('utf-8', 'ignore').decode('utf-8')
+        if legal_name != doc_files[i]:
+            os.rename(join(cf.PATH_TO_DOCXS, doc_files[i]),
+                      join(cf.PATH_TO_DOCXS, legal_name))
+            print(f'non utf-8 characters in {legal_name} is removed')
+        # if docx folder has documents not in database, write_to_db
+        if legal_name not in paper_titles:
+            faiss_indexs = write_to_db(legal_name, model, win_size,
+                                       max_words, faiss_indexs)
+    return faiss_indexs
+
+
+def update_papers(title: str, sents: list, embeddings, ids: list):
     """
     write to paper.db
     Args:
@@ -79,36 +92,17 @@ def update_papers(title: str, sents: list, ids: list):
         none
 
     """
-    for s, id in zip(sents, ids):
+    for s, id, e in zip(sents, ids, embeddings):
+        e = list(e)
+        e1 = e[0: int(len(e)*0.25)]
+        e2 = e[int(len(e)*0.25): int(len(e)*0.5)]
+        e3 = e[int(len(e)*0.5): int(len(e)*0.75)]
+        e4 = e[int(len(e)*0.75):]
         link = gen_link(title, s)
-        p = Paper(title=title, seg=s, link=link, id=id)
+        p = Paper(title=title, link=link, seg=s, e1=e1, e2=e2, e3=e3, e4=e4,
+                  id=id)
         db.session.add(p)
     db.session.commit()
-
-
-def update_papers_index(embeddings: np.array, all_ids: list,
-                        path_to_faiss: str, faissindex):
-    """
-    update the path_to_faiss.pickle file
-    Args:
-        embeddings: sentence_bert embeddings
-        all_ids: ids
-        path_to_faiss: path to faiss index pickle
-    Returns:
-    """
-    if faissindex is not None:
-        indexs = faissindex
-    elif os.path.exists(path_to_faiss):
-        with open(path_to_faiss, "rb") as h:
-            indexs = pickle.load(h)
-            indexs = faiss.deserialize_index(indexs)
-    else:
-        indexs = faiss.IndexFlatIP(embeddings.shape[1])
-        indexs = faiss.IndexIDMap(indexs)
-    indexs.add_with_ids(embeddings, np.array(all_ids))
-    with open(path_to_faiss, "wb") as f_faiss:
-        pickle.dump(faiss.serialize_index(indexs), f_faiss)
-    print("update indexs done")
 
 
 def write_to_html(filepath: str):
@@ -132,20 +126,18 @@ def write_to_html(filepath: str):
             print("new file %s is done" % newfile)
 
 
-def write_to_db(file_name: str, path_to_papers: str, path_to_faiss: str,
-                model, win_size: int, max_words: int, faissindex):
+def write_to_db(file_name: str, model, win_size: int, max_words: int,
+                faiss_indexs):
     """
     give one paper, update the papers.pickle and papers_index.pickle
     papers.pickle: np.array([title, sents, embedding, id])
     papers_index.pickle:
     Args:
         file_name: path of doc
-        path_to_papers: path of paper.db
-        path_to_faiss: path of faiss index pickle
         model: sentence_bert model
         win_size: sliding window size
         max_words: maximum words per segment
-        faissindex: faiss index
+        faiss_indexs: faiss index
 
     Returns:
 
@@ -159,9 +151,6 @@ def write_to_db(file_name: str, path_to_papers: str, path_to_faiss: str,
             os.remove(join(cf.PATH_TO_DOCXS, file_name))
         else:
             doc_file_name = file_name
-        title = ".".join(file_name.split(".")[:-1])
-        if not os.path.exists(path_to_papers):
-            db.create_all()
         latest_id = Paper.query.count()
         # Check if CUDA is available ans switch to GPU
         if torch.cuda.is_available():
@@ -176,11 +165,16 @@ def write_to_db(file_name: str, path_to_papers: str, path_to_faiss: str,
         # change datatype
         embeddings = np.array([embedding for embedding in embeddings]).astype(
             "float32")
-        update_papers(title, all_sents, all_ids)
         normalize_L2(embeddings)
-        update_papers_index(embeddings, all_ids, path_to_faiss,
-                            faissindex)
+        update_papers(doc_file_name, all_sents, embeddings.astype("float"), all_ids)
         write_to_html(join(cf.PATH_TO_DOCXS, doc_file_name))
+        if faiss_indexs:
+            faiss_indexs.add_with_ids(embeddings, np.array(all_ids))
+        else:
+            faiss_indexs = faiss.IndexFlatIP(embeddings.shape[1])
+            faiss_indexs = faiss.IndexIDMap(faiss_indexs)
+            faiss_indexs.add_with_ids(embeddings, np.array(all_ids))
+    return faiss_indexs
 
 
 if __name__ == '__main__':

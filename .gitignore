@@ -7,3 +7,4 @@ __pycache__/
 /Q&A
 copyfile.py
 PARCFILES/
+docker-compose.yml
