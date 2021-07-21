@@ -53,8 +53,8 @@ from app import routes, models
 pyctuator = Pyctuator(
     app,
     "Semantic Segment Search",
-    app_url="http://host.docker.internal:5000",
-    pyctuator_endpoint_url="http://host.docker.internal:5000/pyctuator",
+    app_url="http://semanticsearch.site.docker.internal:5000",
+    pyctuator_endpoint_url="http://semanticsearch.site.docker.internal:5000/pyctuator",
     registration_url="http://localhost:8080/instances"
 )
 
