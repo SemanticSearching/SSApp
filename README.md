@@ -283,15 +283,22 @@ DB_NAME: aws postgresql database name
 # UI
 LOGIN_USER: login user
 LOGIN_PASSWORD: login password
+# 
+APP_ADDR: domain of app, without http://, like semanticsearch.site
 ```
 ## Build the Images
+# Run Spring-boot-admin
+```angular2html
+docker run --rm -p 8080:8080 michayaak/spring-boot-admin:2.2.3-1
+```
+# Run SSApp
 Use the following two commands to build the image and run the container.
 ```angular2html
 sudo docker build -t ssapp:latest --build-arg DB_USER=xx --build-arg 
 DB_PASS=xx --build-arg DB_HOST=xx --build-arg DB_NAME=xx --build-arg 
-LOGIN_USER=xx --build-arg LOGIN_PASSWORD=xx .
+LOGIN_USER=xx --build-arg LOGIN_PASSWORD=xx --build-arg APP_ADDR=xx .
 
-sudo sudo docker run --name ssapp -d -p 80:5000 --rm ssapp:latest
+sudo sudo docker run --name ssapp -d -p 8000:5000 --rm ssapp:latest
 ```
 
 <!-- USAGE EXAMPLES -->
