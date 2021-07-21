@@ -14,10 +14,10 @@ ARG DB_NAME
 ARG LOGIN_USER
 ARG LOGIN_PASSWORD
 # AWS
-ARG AWS_ACCESS_KEY_ID
-ARG AWS_SECRET_ACCESS_KEY
+#ARG AWS_ACCESS_KEY_ID
+#ARG AWS_SECRET_ACCESS_KEY
 #ARG AWS_DEFAULT_REGION
-
+ARG APP_ADDR
 #
 RUN conda env config vars set DB_USER=$DB_USER
 RUN conda env config vars set DB_PASS=$DB_PASS
@@ -25,8 +25,9 @@ RUN conda env config vars set DB_HOST=$DB_HOST
 RUN conda env config vars set DB_NAME=$DB_NAME
 RUN conda env config vars set LOGIN_USER=$LOGIN_USER
 RUN conda env config vars set LOGIN_PASSWORD=$LOGIN_PASSWORD
-RUN conda env config vars set AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-RUN conda env config vars set AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+RUN conda env config vars set APP_ADDR=$APP_ADDR
+#RUN conda env config vars set AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+#RUN conda env config vars set AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 #RUN conda env config vars set AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
 ENV FLASK_APP=ssapp.py
 ENV FLASK_ENV=development

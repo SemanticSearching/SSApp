@@ -47,5 +47,4 @@ class Config(object):
     PASSWORD = os.environ.get("LOGIN_PASSWORD") or "sss"
     print(f"user name is: {USERNAME}, password is: {PASSWORD}")
     #
-    APP_ADDR = 'localhost'
-    SBA_ADDR = 'localhost'
+    APP_ADDR = os.environ.get("APP_ADDR") or "localhost"

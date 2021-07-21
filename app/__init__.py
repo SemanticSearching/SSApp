@@ -42,21 +42,15 @@ if not login_user:
 
 from app import routes, models
 
-# pyctuator = Pyctuator(
-#                         app,
-#                         "Semantic Segment Search",
-#                         app_url=f"http://{cf.APP_ADDR}:5000",
-#                         pyctuator_endpoint_url=f"http://{cf.APP_ADDR}:5000/pyctuator",
-#                         registration_url=f"http://{cf.SBA_ADDR}:8080/instances",
-#                         app_description="SSApp Spring Boot Admin",
-# )
+
 pyctuator = Pyctuator(
     app,
     "Semantic Segment Search",
-    app_url="http://semanticsearch.site.docker.internal:5000",
-    pyctuator_endpoint_url="http://semanticsearch.site.docker.internal:5000/pyctuator",
-    registration_url="http://localhost:8080/instances"
+    app_url=f"http://{cf.APP_ADDR}:8000",
+    pyctuator_endpoint_url=f"http://{cf.APP_ADDR}:8000/pyctuator",
+    registration_url=f"http://{cf.APP_ADDR}:8080/instances"
 )
+
 
 pyctuator.set_git_info(
     commit='2f03f40',
