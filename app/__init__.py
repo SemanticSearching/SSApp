@@ -9,7 +9,9 @@ from flask_migrate import Migrate
 from app.utils import load_bert_model, load_faiss_index
 from flask_dropzone import Dropzone
 from flask_login import LoginManager
-import boto3
+from pyctuator.pyctuator import Pyctuator
+from pyctuator.health.db_health_provider import DbHealthProvider
+from datetime import datetime
 
 app = Flask(__name__, static_folder=cf.PATH_TO_STATIC, template_folder=cf.PATH_TO_TEMPLATES)
 app.config.from_object(cf)
@@ -39,6 +41,31 @@ if not login_user:
 #                       aws_secret_access_key = cf.SECRET_ACCESS_KEY)
 
 from app import routes, models
+
+# pyctuator = Pyctuator(
+#                         app,
+#                         "Semantic Segment Search",
+#                         app_url=f"http://{cf.APP_ADDR}:5000",
+#                         pyctuator_endpoint_url=f"http://{cf.APP_ADDR}:5000/pyctuator",
+#                         registration_url=f"http://{cf.SBA_ADDR}:8080/instances",
+#                         app_description="SSApp Spring Boot Admin",
+# )
+pyctuator = Pyctuator(
+    app,
+    "Semantic Segment Search",
+    app_url="http://host.docker.internal:5000",
+    pyctuator_endpoint_url="http://host.docker.internal:5000/pyctuator",
+    registration_url="http://localhost:8080/instances"
+)
+
+pyctuator.set_git_info(
+    commit='2f03f40',
+    time='Tue Jul 20 16:24:06 2021 -0700',
+    branch='origin/master',
+)
+
+
+
 
 
 
