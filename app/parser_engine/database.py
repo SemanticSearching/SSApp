@@ -80,7 +80,8 @@ def gen_faiss(paper_all, model, win_size: int= 3, max_words: int = 100):
         # if not find htmls, then re-generate one
         html_path = os.path.join(cf.PATH_TO_HTMLS,
                                  legal_name.replace(".docx", ".html"))
-        if not os.path.exists(html_path):
+        if (not os.path.exists(html_path)) and legal_name.split(".")[-1] in \
+                cf.ALLOWED_EXTENSIONS:
             write_to_html(os.path.join(cf.PATH_TO_DOCXS, legal_name))
     return faiss_indexs
 
