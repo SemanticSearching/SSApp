@@ -77,6 +77,11 @@ def gen_faiss(paper_all, model, win_size: int= 3, max_words: int = 100):
         if legal_name not in paper_titles:
             faiss_indexs = write_to_db(legal_name, model, win_size,
                                        max_words, faiss_indexs)
+        # if not find htmls, then re-generate one
+        html_path = os.path.join(cf.PATH_TO_HTMLS,
+                                 legal_name.replace(".docx", ".html"))
+        if not os.path.exists(html_path):
+            write_to_html(os.path.join(cf.PATH_TO_DOCXS, legal_name))
     return faiss_indexs
 
 
