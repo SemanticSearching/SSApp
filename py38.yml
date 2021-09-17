@@ -1,4 +1,4 @@
-name: py38
+name: ssapp
 channels:
   - huggingface
   - pytorch
@@ -165,15 +165,15 @@ dependencies:
     - werkzeug==1.0.1
     - wrapt==1.12.1
     - wtforms==2.3.3
-variables:
-  ACL: public-read
-  AWS_ACCESS_KEY_ID: AKIAQN5XJMCJN5DGQV4F
-  AWS_SECRET_ACCESS_KEY: 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
-  DB_HOST: postgresql.c7az1kpaekhl.us-east-2.rds.amazonaws.com
-  DB_NAME: ssapp
-  DB_PASS: Pzy0501#
-  DB_USER: zpeng
-  FLASKS3_BUCKET_NAME: ssapp-s3
-  FLASKS3_REGION: us-east-2
-  LOGIN_PASSWORD: sss
-  LOGIN_USER: parc
+#variables:
+#  ACL: public-read
+#  AWS_ACCESS_KEY_ID: AKIAQN5XJMCJN5DGQV4F
+#  AWS_SECRET_ACCESS_KEY: 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
+#  DB_HOST: postgresql.c7az1kpaekhl.us-east-2.rds.amazonaws.com
+#  DB_NAME: ssapp
+#  DB_PASS: Pzy0501#
+#  DB_USER: zpeng
+#  FLASKS3_BUCKET_NAME: ssapp-s3
+#  FLASKS3_REGION: us-east-2
+#  LOGIN_PASSWORD: sss
+#  LOGIN_USER: parc

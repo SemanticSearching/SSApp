@@ -1,6 +1,11 @@
 import os
-from os.path import join
-basedir = os.path.abspath(os.path.dirname(__file__))
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+
+basedir = os.path.abspath(dirname(__file__))
+all_envs = os.path.join(dirname(basedir), ".env")
+load_dotenv(all_envs)
 
 
 class Config(object):
@@ -18,6 +23,7 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY_ID')
     SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME')
 
     # function variables
     ROWS_PER_PAGE = 10

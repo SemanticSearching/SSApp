@@ -15,6 +15,7 @@ import urllib
 import shutil
 from pdf2docx import Converter
 from tqdm import tqdm
+from io import BytesIO, StringIO
 
 
 def gen_link(title, sent) -> str:
@@ -35,10 +36,62 @@ def gen_link(title, sent) -> str:
     return prefix + urllib.parse.quote(sent, safe='~()*!.\'')
 
 
-def gen_faiss(paper_all, model, win_size: int= 3, max_words: int = 100):
+# def gen_faiss(paper_all, model, win_size: int= 3, max_words: int = 100):
+#     """
+#     gen faiss index at initialization
+#     Args:
+#         paper_all: All papers in database
+#         model: sentence_bert model
+#         win_size: sliding window, default is 3
+#         max_words: max words per segment, default is 300
+#
+#     Returns:
+#         None
+#
+#     """
+#     # remove all the html in
+#     if os.path.exists(cf.PATH_TO_HTMLS):
+#         # shutil.rmtree(cf.PATH_TO_HTMLS)
+#         # os.mkdir(cf.PATH_TO_HTMLS)
+#         pass
+#     else:
+#         os.mkdir(cf.PATH_TO_HTMLS)
+#     # gen the faiss indexs
+#     paper_titles = set([i.title for i in paper_all])
+#     faiss_indexs = None
+#     # if database has data, load the data into faiss_indexs
+#     if paper_all:
+#         paper_ids = np.array([i.id for i in paper_all])
+#         paper_embeddings = np.array([i.e1 + i.e2 + i.e3+ i.e4 for i in
+#                                      paper_all]).astype("float32")
+#         faiss_indexs = faiss.IndexFlatIP(paper_embeddings.shape[1])
+#         faiss_indexs = faiss.IndexIDMap(faiss_indexs)
+#         faiss_indexs.add_with_ids(paper_embeddings, paper_ids)
+#     doc_files = os.listdir(cf.PATH_TO_DOCXS)
+#     for i in tqdm(range(len(doc_files))):
+#         legal_name = doc_files[i].encode('utf-8', 'ignore').decode('utf-8')
+#         if legal_name != doc_files[i]:
+#             os.rename(join(cf.PATH_TO_DOCXS, doc_files[i]),
+#                       join(cf.PATH_TO_DOCXS, legal_name))
+#             print(f'non utf-8 characters in {legal_name} is removed')
+#         # if docx folder has documents not in database, write_to_db
+#         if legal_name not in paper_titles:
+#             faiss_indexs = write_to_db(legal_name, model, win_size,
+#                                        max_words, faiss_indexs)
+#         # if not find htmls, then re-generate one
+#         html_path = os.path.join(cf.PATH_TO_HTMLS,
+#                                  legal_name.replace(".docx", ".html"))
+#         if (not os.path.exists(html_path)) and legal_name.split(".")[-1] in \
+#                 cf.ALLOWED_EXTENSIONS:
+#             write_to_html(os.path.join(cf.PATH_TO_DOCXS, legal_name))
+#     return faiss_indexs
+
+def gen_faiss(s3, ssapp_docs, s3_bucket_name, paper_all, model, win_size: int=3,
+              max_words: int=100):
     """
     gen faiss index at initialization
     Args:
+        ssapp_docs: bucket
         paper_all: All papers in database
         model: sentence_bert model
         win_size: sliding window, default is 3
@@ -49,12 +102,7 @@ def gen_faiss(paper_all, model, win_size: int= 3, max_words: int = 100):
 
     """
     # remove all the html in
-    if os.path.exists(cf.PATH_TO_HTMLS):
-        # shutil.rmtree(cf.PATH_TO_HTMLS)
-        # os.mkdir(cf.PATH_TO_HTMLS)
-        pass
-    else:
-        os.mkdir(cf.PATH_TO_HTMLS)
+
     # gen the faiss indexs
     paper_titles = set([i.title for i in paper_all])
     faiss_indexs = None
@@ -66,24 +114,44 @@ def gen_faiss(paper_all, model, win_size: int= 3, max_words: int = 100):
         faiss_indexs = faiss.IndexFlatIP(paper_embeddings.shape[1])
         faiss_indexs = faiss.IndexIDMap(faiss_indexs)
         faiss_indexs.add_with_ids(paper_embeddings, paper_ids)
-    doc_files = os.listdir(cf.PATH_TO_DOCXS)
-    for i in tqdm(range(len(doc_files))):
-        legal_name = doc_files[i].encode('utf-8', 'ignore').decode('utf-8')
-        if legal_name != doc_files[i]:
-            os.rename(join(cf.PATH_TO_DOCXS, doc_files[i]),
-                      join(cf.PATH_TO_DOCXS, legal_name))
-            print(f'non utf-8 characters in {legal_name} is removed')
-        # if docx folder has documents not in database, write_to_db
-        if legal_name not in paper_titles:
-            faiss_indexs = write_to_db(legal_name, model, win_size,
-                                       max_words, faiss_indexs)
-        # if not find htmls, then re-generate one
-        html_path = os.path.join(cf.PATH_TO_HTMLS,
-                                 legal_name.replace(".docx", ".html"))
-        if (not os.path.exists(html_path)) and legal_name.split(".")[-1] in \
-                cf.ALLOWED_EXTENSIONS:
-            write_to_html(os.path.join(cf.PATH_TO_DOCXS, legal_name))
+    for file in ssapp_docs.objects.filter(Prefix='docs/'):
+        file_key = file.key
+        if file_key.split('.')[-1] in cf.ALLOWED_EXTENSIONS:
+            # if file name is not legal, rename aws s3 file name
+            # legal_name has the format: docs/...
+            legal_key = file_key.encode('utf-8', 'ignore').decode('utf-8')
+            if legal_key != file_key:
+                s3.Object(s3_bucket_name, legal_key).copy_from(
+                    CopySource=f'{s3_bucket_name}/{file_key}')
+                s3.Object(s3_bucket_name, file_key).delete()
+            legal_name = legal_key[5:]
+            if legal_name not in paper_titles:
+                # write to db
+                body = BytesIO(file.get()['Body'].read())
+                faiss_indexs = write_to_db(legal_name, body, s3, s3_bucket_name,
+                                           model, win_size, max_words, faiss_indexs)
+                write_to_html(legal_key, body, s3, s3_bucket_name)
     return faiss_indexs
+
+
+    # doc_files = os.listdir(cf.PATH_TO_DOCXS)
+    # for i in tqdm(range(len(doc_files))):
+    #     legal_name = doc_files[i].encode('utf-8', 'ignore').decode('utf-8')
+    #     if legal_name != doc_files[i]:
+    #         os.rename(join(cf.PATH_TO_DOCXS, doc_files[i]),
+    #                   join(cf.PATH_TO_DOCXS, legal_name))
+    #         print(f'non utf-8 characters in {legal_name} is removed')
+    #     # if docx folder has documents not in database, write_to_db
+    #     if legal_name not in paper_titles:
+    #         faiss_indexs = write_to_db(legal_name, model, win_size,
+    #                                    max_words, faiss_indexs)
+    #     # if not find htmls, then re-generate one
+    #     html_path = os.path.join(cf.PATH_TO_HTMLS,
+    #                              legal_name.replace(".docx", ".html"))
+    #     if (not os.path.exists(html_path)) and legal_name.split(".")[-1] in \
+    #             cf.ALLOWED_EXTENSIONS:
+    #         write_to_html(os.path.join(cf.PATH_TO_DOCXS, legal_name))
+    # return faiss_indexs
 
 
 def update_papers(title: str, sents: list, embeddings, ids: list):
@@ -111,7 +179,27 @@ def update_papers(title: str, sents: list, embeddings, ids: list):
     db.session.commit()
 
 
-def write_to_html(filepath: str):
+# def write_to_html(filepath: str):
+#     """
+#     convert doc to html
+#     Args:
+#         filepath: path of doc file
+#
+#     Returns:
+#         none
+#
+#     """
+#     newfile = os.path.basename(filepath)
+#     with open(filepath, "rb") as docx_file:
+#         result = mammoth.convert_to_html(docx_file)
+#         html = result.value  # The generated HTML
+#         html_path = os.path.join(cf.PATH_TO_HTMLS,
+#                                  newfile.replace(".docx", ".html"))
+#         with open(html_path, "a+", encoding="utf8") as f:
+#             f.write(html)
+#             print("new file %s is done" % newfile)
+
+def write_to_html(filename, body, s3, s3_bucket_name):
     """
     convert doc to html
     Args:
@@ -121,19 +209,71 @@ def write_to_html(filepath: str):
         none
 
     """
-    newfile = os.path.basename(filepath)
-    with open(filepath, "rb") as docx_file:
-        result = mammoth.convert_to_html(docx_file)
-        html = result.value  # The generated HTML
-        html_path = os.path.join(cf.PATH_TO_HTMLS,
-                                 newfile.replace(".docx", ".html"))
-        with open(html_path, "a+", encoding="utf8") as f:
-            f.write(html)
-            print("new file %s is done" % newfile)
+    filename = filename[5:].replace(".docx", ".html")
+    result = mammoth.convert_to_html(body)
+    html = result.value  # The generated HTML
+    html_path = join(cf.PATH_TO_HTMLS, filename)
+    with open(html_path, 'a+') as f:
+        f.write(html)
+    s3.meta.client.upload_file(html_path, s3_bucket_name, join('htmls', filename),
+                               ACL='public-read', ContentType='text/html')
+    os.remove(html_path)
+    print('done')
 
 
-def write_to_db(file_name: str, model, win_size: int, max_words: int,
-                faiss_indexs):
+
+# def write_to_db(file_name: str, model, win_size: int, max_words: int,
+#                 faiss_indexs):
+#     """
+#     give one paper, update the papers.pickle and papers_index.pickle
+#     papers.pickle: np.array([title, sents, embedding, id])
+#     papers_index.pickle:
+#     Args:
+#         file_name: path of doc
+#         model: sentence_bert model
+#         win_size: sliding window size
+#         max_words: maximum words per segment
+#         faiss_indexs: faiss index
+#
+#     Returns:
+#
+#     """
+#     if file_name.split(".")[-1] in cf.ALLOWED_EXTENSIONS:
+#         if file_name.split(".")[-1] == "pdf":
+#             doc_file_name = ".".join(file_name.split(".")[:-1]) + ".docx"
+#             cv = Converter(join(cf.PATH_TO_DOCXS, file_name))
+#             cv.convert(join(cf.PATH_TO_DOCXS, doc_file_name))
+#             cv.close()
+#             os.remove(join(cf.PATH_TO_DOCXS, file_name))
+#         else:
+#             doc_file_name = file_name
+#         latest_id = Paper.query.count()
+#         # Check if CUDA is available ans switch to GPU
+#         if torch.cuda.is_available():
+#             model = model.to(torch.device("cuda"))
+#         print(model.device)
+#         all_sents = docx_parser(join(cf.PATH_TO_DOCXS, doc_file_name),
+#                                 sliding_window=win_size, max_words=max_words)
+#         all_ids = [int(i) for i in range(latest_id, latest_id + len(all_sents))]
+#         all_sents = [" ".join(segment) for segment in all_sents]
+#         # Convert abstracts to vectors
+#         embeddings = model.encode(all_sents, show_progress_bar=True)
+#         # change datatype
+#         embeddings = np.array([embedding for embedding in embeddings]).astype(
+#             "float32")
+#         normalize_L2(embeddings)
+#         update_papers(doc_file_name, all_sents, embeddings.astype("float"), all_ids)
+#         write_to_html(join(cf.PATH_TO_DOCXS, doc_file_name))
+#         if faiss_indexs:
+#             faiss_indexs.add_with_ids(embeddings, np.array(all_ids))
+#         else:
+#             faiss_indexs = faiss.IndexFlatIP(embeddings.shape[1])
+#             faiss_indexs = faiss.IndexIDMap(faiss_indexs)
+#             faiss_indexs.add_with_ids(embeddings, np.array(all_ids))
+#     return faiss_indexs
+
+def write_to_db(file_name: str, body, s3, s3_bucket_name, model, win_size: int,
+                max_words: int, faiss_indexs):
     """
     give one paper, update the papers.pickle and papers_index.pickle
     papers.pickle: np.array([title, sents, embedding, id])
@@ -148,38 +288,27 @@ def write_to_db(file_name: str, model, win_size: int, max_words: int,
     Returns:
 
     """
-    if file_name.split(".")[-1] in cf.ALLOWED_EXTENSIONS:
-        if file_name.split(".")[-1] == "pdf":
-            doc_file_name = ".".join(file_name.split(".")[:-1]) + ".docx"
-            cv = Converter(join(cf.PATH_TO_DOCXS, file_name))
-            cv.convert(join(cf.PATH_TO_DOCXS, doc_file_name))
-            cv.close()
-            os.remove(join(cf.PATH_TO_DOCXS, file_name))
-        else:
-            doc_file_name = file_name
-        latest_id = Paper.query.count()
-        # Check if CUDA is available ans switch to GPU
-        if torch.cuda.is_available():
-            model = model.to(torch.device("cuda"))
-        print(model.device)
-        all_sents = docx_parser(join(cf.PATH_TO_DOCXS, doc_file_name),
-                                sliding_window=win_size, max_words=max_words)
-        all_ids = [int(i) for i in range(latest_id, latest_id + len(all_sents))]
-        all_sents = [" ".join(segment) for segment in all_sents]
-        # Convert abstracts to vectors
-        embeddings = model.encode(all_sents, show_progress_bar=True)
-        # change datatype
-        embeddings = np.array([embedding for embedding in embeddings]).astype(
-            "float32")
-        normalize_L2(embeddings)
-        update_papers(doc_file_name, all_sents, embeddings.astype("float"), all_ids)
-        write_to_html(join(cf.PATH_TO_DOCXS, doc_file_name))
-        if faiss_indexs:
-            faiss_indexs.add_with_ids(embeddings, np.array(all_ids))
-        else:
-            faiss_indexs = faiss.IndexFlatIP(embeddings.shape[1])
-            faiss_indexs = faiss.IndexIDMap(faiss_indexs)
-            faiss_indexs.add_with_ids(embeddings, np.array(all_ids))
+    latest_id = Paper.query.count()
+    # Check if CUDA is available ans switch to GPU
+    if torch.cuda.is_available():
+        model = model.to(torch.device("cuda"))
+    print(model.device)
+    all_sents = docx_parser(body, sliding_window=win_size, max_words=max_words)
+    all_ids = [int(i) for i in range(latest_id, latest_id + len(all_sents))]
+    all_sents = [" ".join(segment) for segment in all_sents]
+    # Convert abstracts to vectors
+    embeddings = model.encode(all_sents, show_progress_bar=True)
+    # change datatype
+    embeddings = np.array([embedding for embedding in embeddings]).astype(
+        "float32")
+    normalize_L2(embeddings)
+    update_papers(file_name, all_sents, embeddings.astype("float"), all_ids)
+    if faiss_indexs:
+        faiss_indexs.add_with_ids(embeddings, np.array(all_ids))
+    else:
+        faiss_indexs = faiss.IndexFlatIP(embeddings.shape[1])
+        faiss_indexs = faiss.IndexIDMap(faiss_indexs)
+        faiss_indexs.add_with_ids(embeddings, np.array(all_ids))
     return faiss_indexs
 
 

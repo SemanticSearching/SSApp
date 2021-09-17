@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, request, redirect, flash,\
     send_from_directory, current_app, send_from_directory
 from app import app, gen_faiss, load_faiss_index, sent_bert, write_to_html, \
-    write_to_db
+    write_to_db, ssapp_docs, s3
 from app.forms import TitleLink
 from app.models import Paper, User
 from app.forms import LoginForm
@@ -24,8 +24,8 @@ faiss_indexs = None
 def index():
     global faiss_indexs
     paper_all = Paper.query.all()
-    faiss_indexs = gen_faiss(paper_all, sent_bert, cf.PARSER_WIN,
-                            cf.PARSER_MAX_WORDS)
+    faiss_indexs = gen_faiss(s3, ssapp_docs, cf.S3_BUCKET_NAME, paper_all, sent_bert,
+                             cf.PARSER_WIN, cf.PARSER_MAX_WORDS)
     return render_template("searchpage.html")
 
 
