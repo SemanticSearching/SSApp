@@ -30,7 +30,8 @@ def gen_link(title, sent) -> str:
 
     """
     title = ".".join(title.split(".")[:-1])
-    title_encode = urllib.parse.quote(title, safe='~()*!.\'')
+    # title_encode = urllib.parse.quote(title, safe='~()*!.\'')
+    title_encode = "+".join(title.split(" "))
     prefix = f"htmls/{title_encode}.html#:~:text="
     sent = sent.strip()
     return prefix + urllib.parse.quote(sent, safe='~()*!.\'')
@@ -215,8 +216,7 @@ def write_to_html(filename, body, s3, s3_bucket_name):
     html_path = join(cf.PATH_TO_HTMLS, filename)
     with open(html_path, 'a+') as f:
         f.write(html)
-    s3.meta.client.upload_file(html_path, s3_bucket_name, join('htmls', filename),
-                               ACL='public-read', ContentType='text/html')
+    s3.meta.client.upload_file(html_path, s3_bucket_name, join('htmls', filename))
     os.remove(html_path)
     print('done')
 
