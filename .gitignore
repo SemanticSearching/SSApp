@@ -8,3 +8,4 @@ __pycache__/
 copyfile.py
 PARCFILES/
 docker-compose.yml
+.env

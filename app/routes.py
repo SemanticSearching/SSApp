@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, request, redirect, flash,\
-    send_from_directory, current_app, send_from_directory
+    send_from_directory, current_app, send_file, render_template_string
 from app import app, gen_faiss, load_faiss_index, sent_bert, write_to_html, \
     write_to_db, ssapp_docs, s3
 from app.forms import TitleLink
@@ -14,6 +14,7 @@ from os.path import join
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 import urllib
+import io
 
 
 faiss_indexs = None
@@ -64,20 +65,24 @@ def document():
     return render_template("document.html")
 
 
-@app.route('/static/docs/<path:filename>', methods=['GET', 'POST'])
-@login_required
-def download_file(filename):
-    doc_path = join(current_app.root_path, "static/docs")
-    return send_from_directory(doc_path, filename=filename,
-                               as_attachment=True)
-
-
 @app.route('/static/htmls/<path:filename>', methods=['GET', 'POST'])
 @login_required
 def download_htmls(filename):
-    doc_path = join(current_app.root_path, "static/htmls")
-    return send_from_directory(doc_path, filename=filename)
 
+    # a_file = io.BytesIO()
+    html_path = join(current_app.root_path, "static/htmls")
+    # clear htmls folder:
+    if os.listdir(html_path):
+        for f_name in os.listdir(html_path):
+            # if f_name.endswith('.html'):
+            f_path = join(html_path, f_name)
+            os.remove(f_path)
+
+    file_path = join(html_path, filename)
+    ssapp_docs.download_file(f'htmls/{filename}', file_path)
+    # with open(file_path, "a+") as f:
+    #     s3.download_fileobj(cf.S3_BUCKET_NAME, f'htmls/{filename}', f)
+    return send_from_directory(html_path, filename=filename)
 
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -89,9 +94,15 @@ def upload_file():
                 filename = secure_filename(file.filename)
                 filepath = join(cf.UPLOAD_FOLDER, filename)
                 file.save(filepath)
-                faiss_indexs = write_to_db(filename, sent_bert,
-                                           cf.PARSER_WIN,
-                                           cf.PARSER_MAX_WORDS, faiss_indexs)
+                #
+                with open(filepath, 'rb') as docx_file:
+                    faiss_indexs = write_to_db(filename, docx_file, sent_bert,
+                                               cf.PARSER_WIN, cf.PARSER_MAX_WORDS,
+                                               faiss_indexs)
+                    write_to_html(filename, docx_file, s3, cf.S3_BUCKET_NAME)
+                s3.meta.client.upload_file(filepath, cf.S3_BUCKET_NAME,
+                                           join('docs', filename))
+                os.remove(filepath)
         return "indexs are update"
 
 
@@ -122,8 +133,12 @@ def logout():
 @app.route('/check')
 @login_required
 def checkfile():
-    files = os.listdir(cf.PATH_TO_HTMLS)
-    links = [urllib.parse.quote(file, safe='~()*!.\'') for file in files]
+    files, links = [], []
+    for file in ssapp_docs.objects.filter(Prefix='docs/'):
+        if file.key.split('.')[-1] in cf.ALLOWED_EXTENSIONS:
+            files.append(file.key[5:].replace('.docx', '.html'))
+            links.append(urllib.parse.quote(file.key[5:].replace('.docx', '.html'),
+                                            safe='~()*!.\''))
     return render_template("parsedfile.html", papers=zip(files, links))
 
 

@@ -44,17 +44,6 @@ if not login_user:
 s3 = boto3.resource('s3', aws_access_key_id = cf.ACCESS_KEY,
                              aws_secret_access_key = cf.SECRET_ACCESS_KEY)
 ssapp_docs = s3.Bucket(cf.S3_BUCKET_NAME)
-# bucket_list = []
-# for file in ssapp_docs.objects.filter(Prefix='docs/'):
-#     file_name = file.key
-#     if file_name.split('.')[-1] == 'docx' or file_name.split('.')[-1] == 'doc':
-#         bucket_list.append(file.key)
-#         body = file.get()['Body'].read()
-#         result = mammoth.convert_to_html(BytesIO(body))
-#         html = result.value  # The generated HTML
-#         body_bytes = BytesIO(body)
-#         body_str = StringIO(body)
-#         print(StringIO(body))
 
 
 from app import routes, models

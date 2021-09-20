@@ -32,12 +32,9 @@
         {% if papers %}
             {% for paper in papers.items %}
                 <div class="container">
-{#                    <h3><a href="{{ url_for('static', filename="",#}
-{#                    _external=True) + paper.link }}"#}
-{#                           target="_blank">{{paper.title}}</a>#}
-{#                    </h3>#}
-                    <h3><a href="https://ssapp-docs.s3.us-east-2.amazonaws.com/"+
-                           paper.link>{{paper.title}}</a>
+                    <h3><a href="{{ url_for('static', filename="",
+                    _external=True) + paper.link }}"
+                           target="_blank">{{paper.title}}</a>
                     </h3>
                 </div>
                 <div class="container">
