@@ -49,20 +49,20 @@ ssapp_docs = s3.Bucket(cf.S3_BUCKET_NAME)
 from app import routes, models
 
 
-# pyctuator = Pyctuator(
-#     app,
-#     "Semantic Segment Search",
-#     app_url=f"http://{cf.APP_ADDR}:8000",
-#     pyctuator_endpoint_url=f"http://{cf.APP_ADDR}:8000/pyctuator",
-#     registration_url=f"http://{cf.APP_ADDR}:8080/instances"
-# )
-#
-#
-# pyctuator.set_git_info(
-#     commit='2f03f40',
-#     time='Tue Jul 20 16:24:06 2021 -0700',
-#     branch='origin/master',
-# )
+pyctuator = Pyctuator(
+    app,
+    "Semantic Segment Search",
+    app_url=f"http://{cf.APP_ADDR}:8000",
+    pyctuator_endpoint_url=f"http://{cf.APP_ADDR}:8000/pyctuator",
+    registration_url=f"http://{cf.APP_ADDR}:8080/instances"
+)
+
+
+pyctuator.set_git_info(
+    commit='2f03f40',
+    time='Tue Jul 20 16:24:06 2021 -0700',
+    branch='origin/master',
+)
 
 
 
