@@ -34,4 +34,5 @@ RUN conda env config vars set AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
 RUN conda env config vars set AWS_DEFAULT_REGION=$S3_BUCKET_NAME
 ENV FLASK_APP=ssapp.py
 ENV FLASK_ENV=development
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "py38", "flask","run", "--host=0.0.0.0"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "ssapp", "flask","run",
+"--host=0.0.0.0"]
